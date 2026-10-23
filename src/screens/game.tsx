@@ -1,0 +1,165 @@
+import { useEffect, useState } from 'react'
+import { AnimatePresence } from 'motion/react'
+import { useNavigate } from 'react-router'
+import { useShallow } from 'zustand/react/shallow'
+import { Chessboard } from '@/components/chess/chessboard'
+import { HintCard } from '@/components/chess/hint-card'
+import { HintSheet } from '@/components/chess/hint-sheet'
+import { MoveCommentary } from '@/components/chess/move-commentary'
+import { MoveToolbar } from '@/components/chess/move-toolbar'
+import { NewGameSheet } from '@/components/chess/new-game-sheet'
+import { WinChanceCard } from '@/components/chess/win-chance-card'
+import { AppHeader } from '@/components/layout/app-header'
+import { ConfirmDialog } from '@/components/layout/confirm-dialog'
+import { ResultScreen } from '@/components/result/result-screen'
+import { DIFFICULTIES } from '@/logic/difficulty'
+import { isActivePhase, useGameStore } from '@/store/game-store'
+import { loadBattle, loadDifficulty } from '@/storage/battle-storage'
+
+export default function Game() {
+  const navigate = useNavigate()
+  const s = useGameStore(
+    useShallow((st) => ({
+      phase: st.phase,
+      difficulty: st.difficulty,
+      playerColor: st.playerColor,
+      moves: st.moves,
+      redo: st.redo,
+      winChance: st.winChance,
+      trend: st.trend,
+      hint: st.hint,
+      hintLoading: st.hintLoading,
+      outcome: st.outcome,
+      fen: st.fen,
+    })),
+  )
+  const actions = useGameStore.getState()
+  const [hintOpen, setHintOpen] = useState(false)
+  const [newGameOpen, setNewGameOpen] = useState(false)
+  const [confirm, setConfirm] = useState<'reset' | 'resign' | null>(null)
+
+  // Opening /play directly (or after a reload): resume the saved battle or start one.
+  useEffect(() => {
+    const store = useGameStore.getState()
+    if (store.phase === 'idle') {
+      let cancelled = false
+      void loadBattle().then((saved) => {
+        if (cancelled || useGameStore.getState().phase !== 'idle') return
+        if (saved) store.resume(saved)
+        else store.newGame(loadDifficulty())
+      })
+      return () => {
+        cancelled = true
+      }
+    }
+    store.continueGame()
+    return () => useGameStore.getState().pause()
+  }, [])
+
+  // Close the hint once the position changes.
+  const [hintFen, setHintFen] = useState<string | null>(null)
+  if (hintOpen && hintFen !== null && hintFen !== s.fen) {
+    setHintOpen(false)
+    setHintFen(null)
+  }
+
+  const isPlayerTurn = s.phase === 'player'
+  const active = isActivePhase(s.phase)
+  const hasPlayerMove = s.moves.some((m) => m.by === 'player')
+  const cfg = DIFFICULTIES[s.difficulty]
+
+  const openHint = () => {
+    setHintFen(s.fen)
+    setHintOpen(true)
+    void actions.requestHint()
+  }
+  const closeHint = () => {
+    setHintOpen(false)
+    setHintFen(null)
+    actions.clearHint()
+  }
+  const playHint = () => {
+    const h = useGameStore.getState().hint
+    closeHint()
+    if (h) actions.playerMove(h.from, h.to)
+  }
+
+  return (
+    <main className="flex flex-1 flex-col gap-4 px-4 pt-2 pb-4">
+      <AppHeader
+        title={`vs Frog (${cfg.label})`}
+        canResign={active}
+        onNewGame={() => setNewGameOpen(true)}
+        onResign={() => setConfirm('resign')}
+      />
+      <MoveCommentary />
+      <Chessboard />
+      <p className="sr-only" aria-live="polite">
+        {s.phase === 'player'
+          ? 'Your turn'
+          : s.phase === 'opponent' || s.phase === 'grading'
+            ? 'Frog is thinking'
+            : ''}
+      </p>
+      <MoveToolbar
+        canUndo={active && hasPlayerMove}
+        canRedo={isPlayerTurn && s.redo.length > 0}
+        canReset={s.moves.length > 0 || s.phase === 'over'}
+        onUndo={actions.undo}
+        onRedo={actions.redoMove}
+        onReset={() =>
+          active && s.moves.length > 0 ? setConfirm('reset') : actions.newGame(s.difficulty, s.playerColor)
+        }
+      />
+      <div className="grid grid-cols-2 gap-3 max-[340px]:grid-cols-1">
+        <HintCard disabled={!isPlayerTurn} onClick={openHint} />
+        <WinChanceCard win={s.winChance} trend={s.trend} />
+      </div>
+
+      <HintSheet
+        open={hintOpen}
+        hint={s.hint}
+        loading={s.hintLoading}
+        onPlay={playHint}
+        onDismiss={closeHint}
+      />
+      <NewGameSheet
+        open={newGameOpen}
+        onOpenChange={setNewGameOpen}
+        onPlay={(difficulty, color) => {
+          setNewGameOpen(false)
+          actions.newGame(difficulty, color)
+        }}
+      />
+      <ConfirmDialog
+        open={confirm === 'reset'}
+        onOpenChange={(o) => !o && setConfirm(null)}
+        title="Restart this game?"
+        description="Your current battle will be cleared."
+        confirmLabel="Restart"
+        onConfirm={() => actions.newGame(s.difficulty, s.playerColor)}
+      />
+      <ConfirmDialog
+        open={confirm === 'resign'}
+        onOpenChange={(o) => !o && setConfirm(null)}
+        title="Resign?"
+        description="The frog will never let you forget it."
+        confirmLabel="Resign"
+        destructive
+        onConfirm={actions.resign}
+      />
+
+      <AnimatePresence>
+        {s.outcome && s.phase === 'over' && (
+          <ResultScreen
+            key="result"
+            outcome={s.outcome}
+            moves={s.moves}
+            onPlayAgain={() => actions.newGame(s.difficulty, s.playerColor)}
+            onHome={() => navigate('/')}
+          />
+        )}
+      </AnimatePresence>
+    </main>
+  )
+}
