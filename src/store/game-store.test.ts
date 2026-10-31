@@ -111,3 +111,68 @@ describe('game store', () => {
     expect(s.winChance).toBe(55)
   })
 })
+
+describe('promotion picker', () => {
+  const battle = (startFen: string, playerColor: 'w' | 'b') => ({
+    version: 1 as const,
+    startFen,
+    moves: [],
+    playerColor,
+    difficulty: 'medium' as const,
+    opponent: 'frog' as const,
+    theme: 'dark' as const,
+    startedAt: 1,
+    updatedAt: 2,
+  })
+
+  beforeEach(() => {
+    timing.minThinkMs = 0
+  })
+
+  it('opens the picker instead of committing, then commits the chosen piece', async () => {
+    useGameStore.getState().resume(battle('8/P6k/8/8/8/8/8/K7 w - - 0 1', 'w'))
+    expect(useGameStore.getState().playerMove('a7', 'a8')).toBe(false)
+    expect(useGameStore.getState().pendingPromotion).toEqual({ from: 'a7', to: 'a8' })
+    expect(useGameStore.getState().moves).toHaveLength(0)
+
+    useGameStore.getState().choosePromotion('n')
+    expect(useGameStore.getState().pendingPromotion).toBeNull()
+    expect(useGameStore.getState().moves[0]).toMatchObject({ san: 'a8=N', promotion: 'n', by: 'player' })
+    await untilPlayerTurn()
+  })
+
+  it('keeps the same piece identity and restores the pawn on undo', async () => {
+    useGameStore.getState().resume(battle('8/P6k/8/8/8/8/8/K7 w - - 0 1', 'w'))
+    useGameStore.getState().playerMove('a7', 'a8')
+    useGameStore.getState().choosePromotion('q')
+    await untilPlayerTurn()
+
+    const promoted = useGameStore.getState().pieces.find((p) => p.id === 'wp1')
+    expect(promoted).toMatchObject({ type: 'q', square: 'a8' })
+
+    useGameStore.getState().undo()
+    const restored = useGameStore.getState().pieces.find((p) => p.id === 'wp1')
+    expect(restored).toMatchObject({ type: 'p', square: 'a7' })
+  })
+
+  it('cancelling commits nothing and keeps the game going', () => {
+    useGameStore.getState().resume(battle('8/P6k/8/8/8/8/8/K7 w - - 0 1', 'w'))
+    useGameStore.getState().playerMove('a7', 'a8')
+    useGameStore.getState().cancelPromotion()
+    expect(useGameStore.getState().pendingPromotion).toBeNull()
+    expect(useGameStore.getState().moves).toHaveLength(0)
+    expect(useGameStore.getState().phase).toBe('player')
+  })
+
+  it('promotes for Black as well', async () => {
+    // Black pawn on a2 promotes on a1. The white king on h8 is far away.
+    useGameStore.getState().resume(battle('7K/8/8/8/8/8/p7/7k b - - 0 1', 'b'))
+    useGameStore.getState().playerMove('a2', 'a1')
+    expect(useGameStore.getState().pendingPromotion).toEqual({ from: 'a2', to: 'a1' })
+    useGameStore.getState().choosePromotion('q')
+    // The new queen checks the white king along the long diagonal, so SAN ends with "+".
+    expect(useGameStore.getState().moves[0]).toMatchObject({ promotion: 'q', by: 'player' })
+    expect(useGameStore.getState().moves[0].san).toBe('a1=Q+')
+    await untilPlayerTurn()
+  })
+})

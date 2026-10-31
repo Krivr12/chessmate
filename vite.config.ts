@@ -3,13 +3,19 @@ import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
+import { readFileSync } from "node:fs"
 
 // Keep in sync with APP_NAME in src/constants.ts.
 const APP_NAME = "ChessMate"
 const NAVY = "#061824"
+// Version shown in Settings, read from package.json at build time.
+const APP_VERSION = JSON.parse(readFileSync(path.resolve(import.meta.dirname, "package.json"), "utf8")).version
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(APP_VERSION),
+  },
   plugins: [
     react(),
     tailwindcss(),

@@ -6,7 +6,7 @@ export function WinChanceCard({ win, trend }: { win: number; trend: number | nul
   const pct = roundWin(win)
   const delta = trend === null ? 0 : Math.round(trend)
   return (
-    <div className="flex min-h-24 flex-col justify-between rounded-2xl bg-blue p-4 text-[#092c45]">
+    <div className="flex min-h-24 flex-col justify-between rounded-2xl bg-win-card p-4 text-win-card-fg">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1.5 text-xs font-medium">
           <ChartNoAxesColumnIncreasing className="size-4" strokeWidth={1.8} aria-hidden="true" />
@@ -16,7 +16,7 @@ export function WinChanceCard({ win, trend }: { win: number; trend: number | nul
           <TooltipTrigger asChild>
             <button
               type="button"
-              className="-m-2 rounded-full p-2 outline-none focus-visible:ring-2 focus-visible:ring-[#092c45]"
+              className="-m-2 rounded-full p-2 outline-none focus-visible:ring-2 focus-visible:ring-win-card-fg"
               aria-label="About win chance"
             >
               <Info className="size-4" strokeWidth={1.8} aria-hidden="true" />
@@ -43,7 +43,7 @@ export function WinChanceCard({ win, trend }: { win: number; trend: number | nul
         )}
       </div>
       <div
-        className="h-1.5 w-full overflow-hidden rounded-full bg-[#cde7fc]"
+        className="h-1.5 w-full overflow-hidden rounded-full bg-win-card-track"
         role="progressbar"
         aria-valuenow={pct}
         aria-valuemin={0}
@@ -51,7 +51,7 @@ export function WinChanceCard({ win, trend }: { win: number; trend: number | nul
         aria-label="Win chance"
       >
         <div
-          className="h-full rounded-full bg-[#092c45] transition-[width] duration-700 ease-out"
+          className="h-full rounded-full bg-win-card-fill transition-[width] duration-700 ease-out"
           style={{ width: `${pct}%` }}
         />
       </div>

@@ -15,7 +15,7 @@ function ToolButton(props: { icon: LucideIcon; label: string; disabled: boolean;
   return (
     <Button
       variant="outline"
-      className="flex-1 bg-card"
+      className="flex-1 border-primary/60 bg-card text-primary hover:bg-primary/10 hover:text-primary"
       disabled={props.disabled}
       onClick={props.onClick}
     >

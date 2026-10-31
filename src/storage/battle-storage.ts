@@ -1,12 +1,10 @@
 import { Chess } from 'chess.js'
 import { del, get, set } from 'idb-keyval'
-import { DEFAULT_DIFFICULTY } from '@/constants'
 import { isDifficulty } from '@/logic/difficulty'
 import { opponentOrDefault } from '@/logic/opponents'
-import type { Difficulty, SavedBattle } from '@/logic/types'
+import type { SavedBattle } from '@/logic/types'
 
 const BATTLE_KEY = 'battle:current'
-const DIFFICULTY_KEY = 'chessmate:difficulty'
 const GRADES = ['best', 'great', 'good', 'inaccuracy', 'mistake', 'blunder']
 
 /** Validate an unknown record. Anything malformed, unknown-version or illegal is "no save". */
@@ -77,19 +75,4 @@ export function requestPersistentStorage() {
   }
 }
 
-export function loadDifficulty(): Difficulty {
-  try {
-    const v = localStorage.getItem(DIFFICULTY_KEY)
-    return isDifficulty(v) ? v : DEFAULT_DIFFICULTY
-  } catch {
-    return DEFAULT_DIFFICULTY
-  }
-}
 
-export function saveDifficulty(d: Difficulty) {
-  try {
-    localStorage.setItem(DIFFICULTY_KEY, d)
-  } catch {
-    // ignore
-  }
-}

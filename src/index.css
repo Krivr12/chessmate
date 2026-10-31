@@ -87,6 +87,12 @@
   --piece-opponent-fill: #0b2a3d;
   --piece-opponent-detail: #d2e9ff;
 
+  /* Win chance card (dark values are the original blue card) */
+  --win-card-bg: #9fd4ff;
+  --win-card-fg: #092c45;
+  --win-card-track: #cde7fc;
+  --win-card-fill: #092c45;
+
   /* Shadows */
   --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.12);
   --shadow-popover: 0 16px 48px rgba(0, 0, 0, 0.35);
@@ -101,6 +107,103 @@
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/*
+ * Light theme (docs/chessmate-ui-design-spec.md §15). Same variable names as :root, so every
+ * component follows the theme with no per-screen changes. <html class="light"> enables it.
+ */
+.light {
+  color-scheme: light;
+
+  --background: #fffdf8;
+  --foreground: #202b36;
+
+  --card: #ffffff;
+  --card-foreground: #202b36;
+
+  --popover: #ffffff;
+  --popover-foreground: #202b36;
+
+  --primary: #ff6b1a;
+  --primary-foreground: #ffffff;
+
+  --secondary: #ffffff;
+  --secondary-foreground: #26323d;
+
+  --muted: #f7f4ee;
+  --muted-foreground: #66717d;
+
+  --accent: #9decd0;
+  --accent-foreground: #0f3d31;
+
+  --destructive: #c94d3d;
+  --destructive-foreground: #ffffff;
+
+  --border: #eae6de;
+  --input: #eae6de;
+  --ring: #ff6b1a;
+
+  --chart-1: #ff6b1a;
+  --chart-2: #28c995;
+  --chart-3: #ffd36e;
+  --chart-4: #cbb8f5;
+  --chart-5: #ff8e7c;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #202b36;
+  --sidebar-primary: #ff6b1a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f7f4ee;
+  --sidebar-accent-foreground: #202b36;
+  --sidebar-border: #eae6de;
+  --sidebar-ring: #ff6b1a;
+
+  --app-bg: #fffdf8;
+  --surface-1: #ffffff;
+  --surface-2: #fffaf1;
+  --surface-3: #f7f4ee;
+
+  --blue: #365d7a;
+  /* Bright orange replaces mint for hints, success, and the Hint sheet in light mode. */
+  --mint: #ff7a1f;
+  --yellow: #ffd36e;
+  --lavender: #cbb8f5;
+  --coral: #ff8e7c;
+
+  --text-primary: #202b36;
+  --text-secondary: #66717d;
+  --border-default: #eae6de;
+  --border-subtle: rgba(32, 43, 54, 0.08);
+
+  --board-light: #fff0d9;
+  --board-dark: #f5c98d;
+  --board-selected: #ff9a3c;
+  --board-last-move: #ffb070;
+  --board-legal-move: #ff6b1a;
+  --board-check: #ff8e7c;
+  --piece-player-fill: #ffffff;
+  --piece-player-stroke: #26323d;
+  --piece-opponent-fill: #26323d;
+  --piece-opponent-detail: #ffffff;
+
+  /* Win chance card: light orange panel, bright orange progress */
+  --win-card-bg: #ffe4cc;
+  --win-card-fg: #7a2e05;
+  --win-card-track: #ffd0a8;
+  --win-card-fill: #ff6b1a;
+
+  --shadow-card: 0 4px 16px rgba(32, 43, 54, 0.06);
+  --shadow-popover: 0 16px 48px rgba(32, 43, 54, 0.18);
+}
+
+/* Set for a moment when the theme changes, so colors crossfade instead of jumping. */
+html.theme-fade,
+html.theme-fade * {
+  transition:
+    background-color 250ms ease,
+    color 250ms ease,
+    border-color 250ms ease !important;
 }
 
 .dark {
@@ -161,6 +264,11 @@
   --color-board-last-move: var(--board-last-move);
   --color-board-legal-move: var(--board-legal-move);
   --color-board-check: var(--board-check);
+
+  --color-win-card: var(--win-card-bg);
+  --color-win-card-fg: var(--win-card-fg);
+  --color-win-card-track: var(--win-card-track);
+  --color-win-card-fill: var(--win-card-fill);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);

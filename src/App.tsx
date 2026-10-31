@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/app-shell'
 import { TabLayout } from '@/components/nav/tab-layout'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { ThemeSync } from '@/components/layout/theme-sync'
 
 // Every screen is its own chunk. The service worker precaches them, so all routes work offline.
 const RootRoute = lazy(() => import('@/screens/root-route'))
@@ -23,6 +24,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <TooltipProvider>
+        <ThemeSync />
         <AppShell>
           <Suspense fallback={null}>
             <Routes>

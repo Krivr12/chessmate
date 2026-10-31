@@ -3,12 +3,14 @@ import type { Color, Square } from 'chess.js'
 import { AnimatePresence, motion } from 'motion/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import { cn } from '@/lib/utils'
+import { fromGrid, toGrid } from '@/logic/board-grid'
 import { initialPieces, PIECE_NAMES, type PieceState } from '@/logic/board-pieces'
-import { useGameStore } from '@/store/game-store'
+import { cn } from '@/lib/utils'
+import { useGameStore, type PromotionPiece } from '@/store/game-store'
+import { useSettingsStore } from '@/store/settings-store'
 import { PieceSvg } from './pieces'
+import { PromotionPicker } from './promotion-picker'
 
-const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const SPRING = { type: 'spring', stiffness: 400, damping: 32 } as const
 const DEFAULT_ARROW_COLOR = '#FF8F93'
 
@@ -35,25 +37,15 @@ type BoardView = {
   lastMove: { from: Square; to: Square } | null
   checkSquare: Square | null
   hint: { from: Square; to: Square } | null
+  pendingPromotion: { from: Square; to: Square } | null
   playerColor: Color
   phase: string
   selectSquare: (square: Square) => void
+  choosePromotion: (piece: PromotionPiece) => void
+  cancelPromotion: () => void
 }
 
-/** Visual column/row (0..7, top-left origin) for a square, given orientation. */
-function toGrid(square: Square, flipped: boolean) {
-  const file = square.charCodeAt(0) - 97
-  const rank = Number(square[1]) - 1
-  return flipped ? { col: 7 - file, row: rank } : { col: file, row: 7 - rank }
-}
-
-function fromGrid(col: number, row: number, flipped: boolean): Square {
-  const file = flipped ? 7 - col : col
-  const rank = flipped ? row : 7 - row
-  return `${FILES[file]}${rank + 1}` as Square
-}
-
-/** A static view: no selection, no last-move or check overlays, and no clicks. */
+/** A static view: no selection, no overlays, no promotion, and no clicks. */
 function readOnlyView(live: BoardView, fen?: string): BoardView {
   return {
     ...live,
@@ -63,7 +55,10 @@ function readOnlyView(live: BoardView, fen?: string): BoardView {
     lastMove: null,
     checkSquare: null,
     hint: null,
+    pendingPromotion: null,
     selectSquare: () => {},
+    choosePromotion: () => {},
+    cancelPromotion: () => {},
   }
 }
 
@@ -76,13 +71,17 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
       lastMove: st.lastMove,
       checkSquare: st.checkSquare,
       hint: st.hint,
+      pendingPromotion: st.pendingPromotion,
       playerColor: st.playerColor,
       phase: st.phase,
       selectSquare: st.selectSquare,
+      choosePromotion: st.choosePromotion,
+      cancelPromotion: st.cancelPromotion,
     })),
   )
   const s = readOnly || fen !== undefined ? readOnlyView(live, fen) : live
   const reduceMotion = useReducedMotion()
+  const highlightLast = useSettingsStore((st) => st.highlightLastMove)
   const flipped = (orientation ?? s.playerColor) === 'b'
   const [focusSquare, setFocusSquare] = useState<Square>(flipped ? 'e7' : 'e2')
   const refs = useRef(new Map<Square, HTMLButtonElement>())
@@ -138,7 +137,7 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
           const isLight = (col + row) % 2 === 0
           const piece = bySquare.get(sq)
           const isTarget = s.legalTargets.includes(sq)
-          const isLast = s.lastMove?.from === sq || s.lastMove?.to === sq
+          const isLast = highlightLast && (s.lastMove?.from === sq || s.lastMove?.to === sq)
           const isHint = s.hint?.from === sq || s.hint?.to === sq
           const tint = highlights?.[sq]
           const label = [
@@ -218,7 +217,10 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
                 transition={reduceMotion ? { duration: 0 } : SPRING}
               >
                 <motion.div
+                  // Keyed by type: a promotion remounts this layer and pops the piece into its new shape.
+                  key={p.type}
                   className="flex h-[82%] w-[82%]"
+                  initial={reduceMotion ? false : { scale: 0.6 }}
                   animate={
                     isSelected && !reduceMotion ? { y: '-8%', scale: 1.08 } : { y: '0%', scale: 1 }
                   }
@@ -274,6 +276,16 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
             )
           })}
         </svg>
+      )}
+
+      {s.pendingPromotion && (
+        <PromotionPicker
+          square={s.pendingPromotion.to}
+          flipped={flipped}
+          color={s.playerColor}
+          onChoose={s.choosePromotion}
+          onCancel={s.cancelPromotion}
+        />
       )}
     </div>
   )

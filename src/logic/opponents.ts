@@ -1,14 +1,16 @@
+import { chickenTalk, trashTalk, type TrashTalkBank } from './trash-talk'
 import type { Difficulty } from './types'
 
-/** Opponent ids. Only 'frog' is live until M21 adds the chicken. */
 export type OpponentId = 'frog' | 'chicken'
 
 export type Opponent = {
   id: OpponentId
   /** Name shown in headers, copy, and aria labels. */
   name: string
-  /** Friendly name for each difficulty level. */
+  /** Friendly name for each difficulty level (D8). */
   difficultyNames: Record<Difficulty, string>
+  /** This opponent's own word bank (D2). */
+  lines: TrashTalkBank
 }
 
 export const OPPONENTS: Record<OpponentId, Opponent> = {
@@ -16,12 +18,13 @@ export const OPPONENTS: Record<OpponentId, Opponent> = {
     id: 'frog',
     name: 'Frog',
     difficultyNames: { easy: 'Sleepy', medium: 'Regular', hard: 'Big brain' },
+    lines: trashTalk,
   },
-  // Placeholder so the type stays complete. M21 replaces it with the real chicken names (D8).
   chicken: {
     id: 'chicken',
     name: 'Chicken',
     difficultyNames: { easy: 'Chick', medium: 'Hen', hard: 'Rooster' },
+    lines: chickenTalk,
   },
 }
 

@@ -2,20 +2,21 @@ import { useEffect, useState } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useShallow } from 'zustand/react/shallow'
-import { Frog } from '@/components/opponent/frog'
+import { OpponentAvatar } from '@/components/opponent/opponent-avatar'
 import { Button } from '@/components/ui/button'
 import { GRADE_META } from '@/lib/grade-meta'
 import { cn } from '@/lib/utils'
 import { useGameStore } from '@/store/game-store'
 
-/** Frog avatar + speech bubble: grade headline of your last move and the frog's line. */
+/** Opponent avatar + speech bubble: grade headline of your last move and the opponent's line. */
 export function MoveCommentary() {
-  const { commentary, phase, engineStatus, retryEngine } = useGameStore(
+  const { commentary, phase, engineStatus, retryEngine, opponent } = useGameStore(
     useShallow((s) => ({
       commentary: s.commentary,
       phase: s.phase,
       engineStatus: s.engineStatus,
       retryEngine: s.retryEngine,
+      opponent: s.opponent,
     })),
   )
   // Show the frog's reaction for a moment before switching to its thinking face.
@@ -35,7 +36,7 @@ export function MoveCommentary() {
   return (
     <section className="flex items-start gap-3" aria-label="Opponent">
       <div className="relative size-14 shrink-0 rounded-2xl border border-border bg-surface-2 p-1">
-        <Frog mood={mood} className="h-full w-full" />
+        <OpponentAvatar opponent={opponent} mood={mood} className="h-full w-full" />
         {thinking && !reacting && (
           <span className="absolute -right-1 -bottom-1 flex gap-0.5 rounded-full bg-surface-3 px-1.5 py-1">
             {[0, 1, 2].map((i) => (

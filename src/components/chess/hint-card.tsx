@@ -1,7 +1,16 @@
 import { ChevronRight, Lightbulb } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export function HintCard({ disabled, onClick }: { disabled: boolean; onClick: () => void }) {
+export function HintCard({
+  disabled,
+  reason,
+  onClick,
+}: {
+  disabled: boolean
+  /** Short note shown instead of the default subtitle, for example why hints are unavailable. */
+  reason?: string
+  onClick: () => void
+}) {
   return (
     <button
       type="button"
@@ -17,7 +26,7 @@ export function HintCard({ disabled, onClick }: { disabled: boolean; onClick: ()
       <span className="flex items-end justify-between gap-2">
         <span>
           <span className="block text-base font-semibold">Hint</span>
-          <span className="block text-xs opacity-80">Show the best move</span>
+          <span className="block text-xs opacity-80">{reason ?? 'Show the best move'}</span>
         </span>
         <ChevronRight className="size-5" strokeWidth={1.8} aria-hidden="true" />
       </span>

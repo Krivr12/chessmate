@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { useShallow } from 'zustand/react/shallow'
@@ -8,14 +8,18 @@ import { HintSheet } from '@/components/chess/hint-sheet'
 import { MoveCommentary } from '@/components/chess/move-commentary'
 import { MoveToolbar } from '@/components/chess/move-toolbar'
 import { NewGameSheet } from '@/components/chess/new-game-sheet'
+import { CapturedPanel } from '@/components/chess/captured-panel'
 import { WinChanceCard } from '@/components/chess/win-chance-card'
 import { AppHeader } from '@/components/layout/app-header'
 import { ConfirmDialog } from '@/components/layout/confirm-dialog'
 import { ResultScreen } from '@/components/result/result-screen'
+import { capturedFromMoves, materialBalance } from '@/logic/captured'
 import { DIFFICULTIES } from '@/logic/difficulty'
 import { OPPONENTS } from '@/logic/opponents'
 import { isActivePhase, useGameStore } from '@/store/game-store'
-import { loadBattle, loadDifficulty } from '@/storage/battle-storage'
+import { loadBattle } from '@/storage/battle-storage'
+import { useSettingsStore } from '@/store/settings-store'
+import { useThemeLock } from '@/store/theme-lock'
 
 export default function Game() {
   const navigate = useNavigate()
@@ -24,6 +28,7 @@ export default function Game() {
       phase: st.phase,
       difficulty: st.difficulty,
       opponent: st.opponent,
+      startFen: st.startFen,
       playerColor: st.playerColor,
       moves: st.moves,
       redo: st.redo,
@@ -48,14 +53,18 @@ export default function Game() {
       void loadBattle().then((saved) => {
         if (cancelled || useGameStore.getState().phase !== 'idle') return
         if (saved) store.resume(saved)
-        else store.newGame(loadDifficulty())
+        else store.newGame(useSettingsStore.getState().defaultDifficulty)
       })
       return () => {
         cancelled = true
       }
     }
     store.continueGame()
-    return () => useGameStore.getState().pause()
+    return () => {
+      // A finished game no longer locks the theme once the player leaves the page (D2).
+      if (useGameStore.getState().phase === 'over') useThemeLock.getState().unlock()
+      useGameStore.getState().pause()
+    }
   }, [])
 
   // Close the hint once the position changes.
@@ -69,7 +78,14 @@ export default function Game() {
   const active = isActivePhase(s.phase)
   const hasPlayerMove = s.moves.some((m) => m.by === 'player')
   const cfg = DIFFICULTIES[s.difficulty]
+  const showHints = useSettingsStore((st) => st.showHints)
   const opponent = OPPONENTS[s.opponent]
+  // Derived from the move list and the board, so undo, redo and resume need no extra state.
+  const captured = useMemo(
+    () => capturedFromMoves(s.startFen, s.moves, s.playerColor),
+    [s.startFen, s.moves, s.playerColor],
+  )
+  const advantage = useMemo(() => materialBalance(s.fen, s.playerColor), [s.fen, s.playerColor])
 
   const openHint = () => {
     setHintFen(s.fen)
@@ -115,9 +131,19 @@ export default function Game() {
         }
       />
       <div className="grid grid-cols-2 gap-3 max-[340px]:grid-cols-1">
-        <HintCard disabled={!isPlayerTurn} onClick={openHint} />
+        <HintCard
+          disabled={!isPlayerTurn || !showHints}
+          reason={showHints ? undefined : 'Hints are off. Turn them on in Settings.'}
+          onClick={openHint}
+        />
         <WinChanceCard win={s.winChance} trend={s.trend} />
       </div>
+      <CapturedPanel
+        playerColor={s.playerColor}
+        opponentName={opponent.name}
+        summary={captured}
+        advantage={advantage}
+      />
 
       <HintSheet
         open={hintOpen}
@@ -162,7 +188,11 @@ export default function Game() {
             opponent={s.opponent}
             moves={s.moves}
             onPlayAgain={() => actions.newGame(s.difficulty, s.playerColor)}
-            onHome={() => navigate('/')}
+            onHome={() => {
+              // Closing the result screen ends the battle's theme lock (D2).
+              useThemeLock.getState().unlock()
+              navigate('/')
+            }}
           />
         )}
       </AnimatePresence>

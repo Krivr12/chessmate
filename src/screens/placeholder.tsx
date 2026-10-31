@@ -12,9 +12,14 @@ export function PlaceholderScreen({ title, note = 'Coming soon.' }: PlaceholderP
     <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 py-10 text-center">
       <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
       <p className="text-sm text-text-secondary">{note}</p>
-      <Button asChild variant="outline">
-        <Link to="/play">Play a game</Link>
-      </Button>
+      <div className="flex gap-2">
+        <Button asChild variant="outline">
+          <Link to="/play">Play a game</Link>
+        </Button>
+        <Button asChild variant="ghost">
+          <Link to="/settings">Settings</Link>
+        </Button>
+      </div>
     </main>
   )
 }

@@ -1,8 +1,11 @@
 import { Chess, type Color, type Move, type Square } from 'chess.js'
 import { create } from 'zustand'
 import { DEFAULT_DIFFICULTY } from '@/constants'
-import { opponentForTheme, opponentOrDefault, type OpponentId } from '@/logic/opponents'
+import { OPPONENTS, opponentForTheme, opponentOrDefault, type OpponentId } from '@/logic/opponents'
+import { playSound, soundForMove } from '@/lib/sound'
+import { vibrate } from '@/lib/haptics'
 import { useSettingsStore } from '@/store/settings-store'
+import { useThemeLock } from '@/store/theme-lock'
 import { resolveTheme, type ResolvedTheme } from '@/store/theme'
 import { EngineCancelledError, engine, type EngineStatus } from '@/engine/engine-service'
 import { applyMove, initialPieces, type PieceState } from '@/logic/board-pieces'
@@ -12,7 +15,7 @@ import { getOutcome } from '@/logic/outcome'
 import { pickLine, type TalkCategory } from '@/logic/trash-talk'
 import type { Difficulty, Grade, Mood, MoveRecord, Outcome, SavedBattle } from '@/logic/types'
 import { playerWinPercent } from '@/logic/win-percent'
-import { clearBattle, saveDifficulty } from '@/storage/battle-storage'
+import { clearBattle } from '@/storage/battle-storage'
 
 /** Tunable timings (tests set these to 0). */
 export const timing = { minThinkMs: 700, analysisMs: 250 }
@@ -27,6 +30,9 @@ export type Phase = 'idle' | 'player' | 'grading' | 'opponent' | 'stalled' | 'ov
 export type Commentary = { id: number; grade: Grade | null; line: string; mood: Mood }
 
 type Analysis = { fen: string; win: number; best: string | null }
+
+/** Piece a pawn can promote to. Chosen in the promotion picker or taken from an engine move. */
+export type PromotionPiece = 'q' | 'r' | 'b' | 'n'
 
 export type GameState = {
   phase: Phase
@@ -59,10 +65,20 @@ export type GameState = {
   /** Opponent and theme of the battle in progress. Read by screens instead of hardcoding the frog. */
   resume: (battle: SavedBattle) => void
   selectSquare: (square: Square) => void
-  playerMove: (from: Square, to: Square) => boolean
+  /**
+   * Try a player move. A pawn move onto the last rank opens the promotion picker instead
+   * (returns false, nothing is committed) unless `promotion` is given.
+   */
+  playerMove: (from: Square, to: Square, promotion?: PromotionPiece) => boolean
+  /** Pending promotion waiting for a piece choice, or null. */
+  pendingPromotion: { from: Square; to: Square } | null
+  choosePromotion: (piece: PromotionPiece) => void
+  cancelPromotion: () => void
   undo: () => void
   redoMove: () => void
   resign: () => void
+  /** Ends the battle without a result: clears the save and releases the theme lock. */
+  discardBattle: () => void
   requestHint: () => Promise<void>
   clearHint: () => void
   pause: () => void
@@ -81,8 +97,11 @@ let commentId = 0
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const toUci = (m: Pick<Move, 'from' | 'to' | 'promotion'>) => m.from + m.to + (m.promotion ?? '')
 
+/** Word bank of the battle's opponent. Set when a battle starts or resumes. */
+let activeLines = OPPONENTS.frog.lines
+
 function say(category: TalkCategory, grade: Grade | null, mood: Mood): Commentary {
-  return { id: ++commentId, grade, line: pickLine(category), mood }
+  return { id: ++commentId, grade, line: pickLine(category, Math.random, activeLines), mood }
 }
 
 const GRADE_MOOD: Record<Grade, Mood> = {
@@ -146,7 +165,7 @@ export const useGameStore = create<GameState>()((set, get) => {
   /** Invalidate in-flight async work and stop the engine. */
   const bump = () => {
     engine.stop()
-    set({ token: get().token + 1 })
+    set({ token: get().token + 1, pendingPromotion: null })
     return get().token
   }
 
@@ -178,6 +197,8 @@ export const useGameStore = create<GameState>()((set, get) => {
   }
 
   const finish = (outcome: Outcome) => {
+    playSound(outcome.result === 'win' ? 'win' : outcome.result === 'loss' ? 'lose' : 'move')
+    vibrate('strong')
     const category: TalkCategory =
       outcome.result === 'win' ? 'playerWins' : outcome.result === 'loss' ? 'playerLoses' : 'draw'
     const mood: Mood = outcome.result === 'win' ? 'sad' : outcome.result === 'loss' ? 'happy' : 'idle'
@@ -207,6 +228,8 @@ export const useGameStore = create<GameState>()((set, get) => {
     if (token !== get().token || !uci) return
 
     const move = game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] })
+    playSound(soundForMove(move))
+    vibrate('move')
     const record: MoveRecord = {
       from: move.from,
       to: move.to,
@@ -300,15 +323,18 @@ export const useGameStore = create<GameState>()((set, get) => {
     outcome: null,
     engineStatus: engine.status,
     token: 0,
+    pendingPromotion: null,
 
     newGame: (difficulty, playerColor = 'w') => {
       bump()
       engine.newGame()
       analysisCache.clear()
-      saveDifficulty(difficulty)
       void clearBattle()
-      // The theme is locked for the whole battle. Settings cannot change it until the battle ends.
+      // A new battle takes the theme from Settings now, then locks it until the battle ends (D2).
+      useThemeLock.getState().unlock()
       const theme = resolveTheme(useSettingsStore.getState().theme)
+      useThemeLock.getState().lock(theme)
+      activeLines = OPPONENTS[opponentForTheme(theme)].lines
       set({
         ...rebuild(START_FEN, []),
         phase: playerColor === 'w' ? 'player' : 'opponent',
@@ -333,6 +359,10 @@ export const useGameStore = create<GameState>()((set, get) => {
 
     resume: (battle) => {
       bump()
+      // The saved battle's theme stays locked, even if Settings or the device changed since.
+      const lockTheme: ResolvedTheme = battle.theme === 'light' ? 'light' : 'dark'
+      useThemeLock.getState().lock(lockTheme)
+      activeLines = OPPONENTS[opponentOrDefault(battle.opponent)].lines
       engine.newGame()
       analysisCache.clear()
       const lastWin = [...battle.moves].reverse().find((m) => m.winAfter !== undefined)?.winAfter
@@ -376,14 +406,20 @@ export const useGameStore = create<GameState>()((set, get) => {
       }
     },
 
-    playerMove: (from, to) => {
+    playerMove: (from, to, promotion) => {
       const s = get()
       if (s.phase !== 'player' || game.turn() !== s.playerColor) return false
       const legal = game.moves({ square: from, verbose: true }).find((m) => m.to === to)
       if (!legal) return false
+      if (legal.promotion && !promotion) {
+        // Ask which piece first. The move is committed by choosePromotion.
+        set({ pendingPromotion: { from, to } })
+        return false
+      }
       const beforeFen = game.fen()
-      // Auto-promote to a queen in phase 1.
-      const move = game.move({ from, to, promotion: legal.promotion ? 'q' : undefined })
+      const move = game.move({ from, to, promotion: legal.promotion ? promotion : undefined })
+      playSound(soundForMove(move))
+      vibrate('move')
       const record: MoveRecord = {
         from: move.from,
         to: move.to,
@@ -403,6 +439,15 @@ export const useGameStore = create<GameState>()((set, get) => {
       void gradePlayerMove(s.moves.length, move, beforeFen)
       return true
     },
+
+    choosePromotion: (piece) => {
+      const pending = get().pendingPromotion
+      if (!pending) return
+      set({ pendingPromotion: null })
+      get().playerMove(pending.from, pending.to, piece)
+    },
+
+    cancelPromotion: () => set({ pendingPromotion: null }),
 
     undo: () => {
       const s = get()
@@ -455,6 +500,25 @@ export const useGameStore = create<GameState>()((set, get) => {
       else primeAnalysis()
     },
 
+    discardBattle: () => {
+      bump()
+      void clearBattle()
+      useThemeLock.getState().unlock()
+      set({
+        ...rebuild(START_FEN, []),
+        phase: 'idle',
+        playerColor: 'w',
+        moves: [],
+        redo: [],
+        analysis: null,
+        winChance: 50,
+        trend: null,
+        hint: null,
+        outcome: null,
+        commentary: say('gameStart', null, 'idle'),
+      })
+    },
+
     resign: () => {
       if (!isActivePhase(get().phase)) return
       bump()
@@ -466,6 +530,7 @@ export const useGameStore = create<GameState>()((set, get) => {
       if (s.phase !== 'player') return
       const token = s.token
       const fen = game.fen()
+      playSound('hint')
       set({ hintLoading: true, commentary: say('hintUsed', s.commentary.grade, 'happy') })
       try {
         const a = s.analysis?.fen === fen ? s.analysis : await ensureAnalysis(fen)
