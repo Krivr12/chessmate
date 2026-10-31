@@ -9,10 +9,14 @@ export type Ply = {
   by: 'player' | 'opponent'
   cp?: number
   mate?: number
+  winBefore?: number
   winAfter?: number
   grade?: Grade
   bestBefore?: string
 }
+
+/** Id of the saved record for a battle. Stable for the battle, so saving twice overwrites one record. */
+export const gameIdFor = (startedAt: number) => `game-${startedAt}`
 
 export type GameReason =
   | 'checkmate'
@@ -84,20 +88,23 @@ export function toPly(m: MoveRecord): Ply {
     by: m.by,
     cp: m.cp,
     mate: m.mate,
+    winBefore: m.winBefore,
     winAfter: m.winAfter,
     grade: m.grade,
     bestBefore: m.bestBefore,
   }
 }
 
-export function gradeCountsOf(moves: MoveRecord[]): Record<Grade, number> {
+type Graded = { by: 'player' | 'opponent'; grade?: Grade }
+
+export function gradeCountsOf(moves: Graded[]): Record<Grade, number> {
   const counts = emptyGradeCounts()
   for (const m of moves) if (m.by === 'player' && m.grade) counts[m.grade] += 1
   return counts
 }
 
 /** Average of GRADE_POINTS over the player's graded moves, rounded to a whole number. */
-export function accuracyOf(moves: MoveRecord[]): number {
+export function accuracyOf(moves: Graded[]): number {
   const graded = moves.filter((m) => m.by === 'player' && m.grade && GRADES.includes(m.grade))
   if (graded.length === 0) return 0
   const total = graded.reduce((sum, m) => sum + GRADE_POINTS[m.grade as Grade], 0)
@@ -125,7 +132,7 @@ export type BattleSnapshot = {
 /** Builds the saved record for a finished battle. The id comes from the start time, so saving twice overwrites one record. */
 export function buildGameRecord(b: BattleSnapshot): GameRecord {
   return {
-    id: `game-${b.startedAt}`,
+    id: gameIdFor(b.startedAt),
     startedAt: b.startedAt,
     endedAt: b.endedAt,
     result: b.outcome.result,

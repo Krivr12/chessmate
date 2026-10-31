@@ -16,6 +16,12 @@ export async function listGames(): Promise<GameRecord[]> {
   return all.filter(isGameRecord).sort((a, b) => b.endedAt - a.endedAt)
 }
 
+export async function getGame(id: string): Promise<GameRecord | null> {
+  const db = await getDb()
+  const rec = await db.get('games', id)
+  return isGameRecord(rec) ? rec : null
+}
+
 export async function deleteGame(id: string): Promise<void> {
   const db = await getDb()
   await db.delete('games', id)

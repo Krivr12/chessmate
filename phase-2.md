@@ -12,7 +12,7 @@ Goal: take the MVP (Landing, New game sheet, Game page, hint, win %, grading, re
 |---|---|---|
 | 1 | Promotion picker | Chess basics gap |
 | 2 | Captured pieces panel (piece type and count) | Fills the empty space under the game cards |
-| 3 | Light mode, with a **theme-linked opponent** (dark = frog, light = chicken). The theme is locked while a battle is in progress, and puzzles and lessons use the locked theme too | Mockup Settings, your direction |
+| 3 | Light mode, with a **theme-linked opponent** (dark = frog, light = chicken). The theme is locked while a battle is in progress | Mockup Settings, your direction |
 | 4 | Settings page (including sound and haptics) | Mockup |
 | 5 | Clear memory / data controls | Earlier request |
 | 6 | Help & Support | Mockup drawer item |
@@ -23,43 +23,26 @@ Goal: take the MVP (Landing, New game sheet, Game page, hint, win %, grading, re
 | 11 | Puzzles (no Daily Challenge) | Mockup |
 | 12 | Learn | Mockup |
 
-**Not in scope:** Daily Challenge, sign in or accounts, sidebar drawer, multiplayer, online play, cloud sync, "Play from here" (backlog), XP and levels (backlog), manual opponent override.
+**Not in scope:** Daily Challenge, sign in or accounts, sidebar drawer, multiplayer, online play, cloud sync.
 
 ---
 
-## 2. Decisions (confirmed)
+## 2. Decisions and assumptions (please confirm)
 
-All decisions below are confirmed and shape the plan. Changing them later costs more.
+These decisions shape the plan. Each can be changed, but changing later costs more.
 
 | # | Decision | Why |
 |---|---|---|
 | D1 | **Theme decides the opponent.** Dark = frog, Light = chicken. System theme follows the device. | Your direction. Needs an `opponent` abstraction (section 4.4). |
-| D2 | **The theme is locked while a battle is in progress.** The theme can only be changed in Settings, and that control is disabled while an unfinished battle exists (running or saved). The Game page has no theme control. If the device flips between dark and light (System theme) during a battle, the app keeps the battle's theme until the battle ends. **Each opponent has its own word bank**, so the frog and chicken each keep their own voice. | The animal always matches the theme, so there is no mixed state to design for. |
-| D3 | **Landing is shown on first launch only.** Start goes to Home. After that the app opens on Home. A saved battle appears as a "Resume battle" card on Home. **Landing has no resume button.** | The Home dashboard replaces Landing as the daily entry point. |
+| D2 | **The theme is locked while a battle is in progress.** The theme can only be changed in Settings, and that control is disabled while an unfinished battle exists (running or saved). The Game page has no theme control. If the device flips between dark and light (System theme) during a battle, the app keeps the battle's theme until the battle ends. | The animal always matches the theme, so there is no mixed state to design for. |
+| D3 | **Landing is shown on first launch only.** Start goes to Home. After that the app opens on Home. A saved battle appears as a "Resume battle" card on Home. | The Home dashboard replaces Landing as the daily entry point. |
 | D4 | **No sidebar.** Navigation is the bottom bar (Home, Puzzles, Learn, Profile). Settings is a gear on Home and Profile. Help & Support lives inside Settings. | Matches your scope. |
 | D5 | **A puzzle is lost on the first wrong move** (like the mockup's win and loss screens). Retry is unlimited, but only a clean solve counts as "solved on first try". | Simple and matches the mockup. |
 | D6 | **"Day streak" = consecutive days with at least one finished game, puzzle, or lesson.** Uses the device's local date. | Daily Challenge is gone, so streak needs a new definition. |
 | D7 | **Profile has an editable local display name** (default "Player"). | The mockup shows a name, but there are no accounts. |
 | D8 | **Chicken difficulty names:** Chick (Easy), Hen (Medium), Rooster (Hard). Frog keeps Sleepy, Regular, Big brain. | Cute, and each animal gets its own voice. |
-| D9 | **Backup and restore (export or import a JSON file) is included in M23.** | iOS can evict local storage. |
-| D10 | **Level and XP are out of v1.** They move to the backlog. | Not in your list. |
-
-### Other decisions (confirmed)
-
-| Topic | Decision |
-|---|---|
-| Storage | Accepted as written in section 4.2 (`idb-keyval` for the current battle, IndexedDB `chessmate` for history, `localStorage` for settings). |
-| Opponent override | No manual override. The theme decides the animal. |
-| Theme lock scope | Locked everywhere. Puzzles and lessons also use the battle's theme while a battle exists. |
-| History cap | No automatic deletion. Settings shows storage usage, and the user deletes games manually. |
-| Analyze fallback for old games | Included in M26. |
-| "Play from here" | Deferred to the backlog. |
-| Learn v1 scope | Ship 10 lessons first (listed in M30). The rest go to the backlog. |
-| Puzzle data | Lichess puzzle database, released under CC0 and free to redistribute. Target 500 to 700 per rating bucket. |
-| Sound | Effects from a CC0 sound pack, precached. |
-| Board and light palette | Warm cream and orange tones taken from the mockup, not the blue palette. |
-| Report a problem | Your personal email and LinkedIn profile, set in one config constant. No contact form and no mail sender. |
-| Hosting | **My pick: Netlify.** The existing `_headers` and `_redirects` files use Netlify's format. Confirm before M32. |
+| D9 | **Backup and restore (export or import a JSON file)** is a recommended extra in the data milestone. | iOS can evict local storage. |
+| D10 | **Level and XP** from the mockup are optional (stretch). | Not in your list. |
 
 ---
 
@@ -112,7 +95,7 @@ New database `chessmate`, version 1:
 Rules:
 - Every write goes through a small storage module with try/catch. A failure must never crash the app.
 - Migrations are numbered functions run on open. Write a unit test for each.
-- Estimate: a 80-move game is roughly 5 KB, so 1,000 games is about 5 MB. No automatic deletion. Settings shows storage usage, and the user deletes old games manually.
+- Estimate: a 80-move game is roughly 5 KB, so 1,000 games is about 5 MB. Optional cap: keep the latest 500 games and warn before deleting older ones.
 
 ### 4.3 Data models
 
@@ -162,7 +145,7 @@ type Opponent = {
   id: OpponentId; name: string;
   difficultyNames: Record<'easy'|'medium'|'hard', string>;
   Avatar: React.FC<{ mood: Mood; size?: number }>;
-  lines: TrashTalkBank;                // own word bank per opponent (D2)
+  lines: TrashTalkBank;
 };
 const opponentForTheme = (resolved: 'dark'|'light'): OpponentId =>
   resolved === 'dark' ? 'frog' : 'chicken';
@@ -177,7 +160,7 @@ const effectiveTheme = savedBattle ? savedBattle.theme : resolve(settings.theme)
 const opponentId = opponentForTheme(effectiveTheme);
 ```
 
-While an unfinished battle exists, the whole app stays in that battle's theme, whatever the device or Settings say. A change that arrives during that time (for example the device switching to light mode) is kept as *pending* and applied after the battle ends and the result screen is closed. Puzzles and lessons follow the same lock: while a battle exists, they use the battle's theme and animal. Without a battle, they use the current theme's animal.
+While an unfinished battle exists, the whole app stays in that battle's theme, whatever the device or Settings say. A change that arrives during that time (for example the device switching to light mode) is kept as *pending* and applied after the battle ends and the result screen is closed. Puzzles and lessons are not locked. They simply use the current theme's animal.
 
 ### 4.5 Shared board capabilities (built once, used everywhere)
 
@@ -280,30 +263,28 @@ Done when: counts are always correct after undo, redo, reset, and resume.
 
 Goal: a full light theme and the theme-linked opponent.
 
-Tokens (warm light palette, taken from the mockup's cream and orange. Validate each pair with a WCAG contrast checker before building on it):
+Tokens (proposal, to validate for contrast with a tool such as a WCAG contrast checker):
 
-| Role | Dark (existing) | Light (warm, proposed) |
+| Role | Dark (existing) | Light (proposed) |
 |---|---|---|
-| App background | `#061824` | `#FFF8F0` (warm cream) |
+| App background | `#061824` | `#F4F9FF` |
 | Surface 1 (cards) | `#091F2D` | `#FFFFFF` |
-| Surface 2 | `#0D2939` | `#FFF1E3` |
-| Surface 3 | `#15364A` | `#FDE3C8` |
-| Primary accent | `#9FD4FF` (blue) | orange around `#E8651E` for shapes and accents. Button fill around `#C2560F` with white text, to be checked for 4.5:1 |
-| Mint (hint, success) | `#79F2C6` | light mint around `#CDF5E0` with dark text |
-| Text primary | `#EAF5FF` | warm dark brown around `#2A2220` |
-| Text secondary | `#A8C4D8` | around `#7A6A5E` (check on cream) |
-| Border | `#214C65` | around `#F0DCC6` |
-| Board light squares | (existing) | around `#FBE8CC` |
-| Board dark squares | (existing) | around `#E9A866` |
+| Surface 2 | `#0D2939` | `#EEF5FC` |
+| Surface 3 | `#15364A` | `#DDEAF6` |
+| Primary blue | `#9FD4FF` | deeper blue, around `#1B6FC2` (white text) |
+| Mint (hint, success) | `#79F2C6` | light mint around `#BFF5DF` with dark text |
+| Text primary | `#EAF5FF` | deep navy, around `#0B2A3D` |
+| Text secondary | `#A8C4D8` | around `#4A6A80` |
+| Border | `#214C65` | around `#C9DCEB` |
 
 Tasks:
 - [ ] Add light tokens (app, shadcn, and chess tokens) under a `.light` scope or `[data-theme]`. Keep chess tokens separate
-- [ ] Board and pieces in light mode: check both piece colors on both square colors. White pieces may need a stronger outline, and the black pieces may need their light inner details adjusted. Adjust the warm square colors if contrast fails
-- [ ] Re-check every grade color and icon (mint, blue, yellow, coral) on the warm cream surfaces
+- [ ] Board and pieces in light mode: check both piece colors on both square colors. White pieces may need a stronger outline, and the black pieces may need their light inner details adjusted
+- [ ] Re-check every grade color and icon (mint, blue, yellow, coral) on light surfaces
 - [ ] Prevent theme flash: an inline script in `index.html` reads the saved theme and sets the class before React loads. Follow the system setting for `system` and listen for changes
 - [ ] Update `<meta name="theme-color">` when the theme changes. (The manifest color stays the dark value, which is fine.)
 - [ ] Build `chicken.tsx` with the same five moods as the frog (idle, think, happy, sad, shock). Suggested look: white and warm yellow body, orange beak and comb, navy eyes
-- [ ] Add the chicken's own word bank (section 7). Each opponent has its own bank, so the chicken never uses frog lines (D2)
+- [ ] Add the chicken's trash talk bank (section 7)
 - [ ] Apply D1: `opponentForTheme`, with the opponent saved on the game when it starts. The New game sheet shows the active theme's animal and its difficulty names (D8)
 - [ ] Apply D2 (theme lock): compute the effective theme as in section 4.4, so the whole app uses the battle's theme while a battle exists
 - [ ] Handle a device theme change during a battle (System theme): keep it pending and apply it when the battle ends
@@ -327,12 +308,12 @@ Layout (follow the spec): back arrow, grouped sections with subtle dividers, sha
 | Appearance | Theme: Dark, Light, System | Applies instantly. The opponent follows the theme. **Disabled while an unfinished battle exists**, with the note "Finish your current battle to change the theme" and two buttons: Resume battle and Clear battle (confirmation, same action as in M23) |
 | Gameplay | Show hints, Highlight last move, Default difficulty, Default color (White, Black, Random) | Show hints off: Hint card is visibly disabled with a short reason. Defaults pre-select in the New game sheet |
 | Sound & haptics | Move sound, Haptic feedback | See below |
-| Data | Clear data (M23) | Rows added in M23, including storage usage |
+| Data | Clear data (M23) | Rows added in M23 |
 | Help | Help & Support row (M24) | Navigates to `/help` |
 | About | Version, credits link | Version from `package.json` |
 
 Sound:
-- [ ] Small effect set from a CC0 sound pack: move, capture, check, promotion, win, lose, hint. Keep the total under about 150 KB and precache them
+- [ ] Small effect set: move, capture, check, promotion, win, lose, hint. Keep the total under about 150 KB and precache them
 - [ ] Audio must start from a user gesture on iOS, so unlock the audio context on the first tap
 - [ ] Respect the toggle everywhere (game, puzzles, lessons)
 
@@ -364,10 +345,10 @@ Rows under **Data** in Settings, each opening a confirmation `Dialog` that state
 Tasks:
 - [ ] Storage module functions per action, with unit tests
 - [ ] Destructive buttons in the coral style. "Clear everything" needs a second confirmation
-- [ ] Storage usage readout using `navigator.storage.estimate()` (treat the numbers as approximate, since some browsers round or restrict them). This readout also serves the no-auto-deletion history rule (section 4.2)
+- [ ] Storage usage readout using `navigator.storage.estimate()` (treat the numbers as approximate, since some browsers round or restrict them)
 - [ ] After "Clear everything", also clear the service worker caches and warn first: the engine and assets will need an internet connection to download again on next open
 - [ ] Never clear data while a game or puzzle is running without ending it first
-- [ ] **Included (D9):** export all data to a JSON file and import it back. Validate imported files (schema version and shape) and never trust them blindly. The backup does not include the current battle, and an import must not change the theme while a battle exists
+- [ ] **Recommended:** export all data to a JSON file and import it back (D9). Validate imported files (schema version and shape) and never trust them blindly. The backup does not include the current battle, and an import must not change the theme while a battle exists
 - [ ] Toast confirmations (`sonner`)
 
 Done when: each action removes exactly what it says, and the app keeps working afterward with empty states.
@@ -380,10 +361,10 @@ Goal: a local, offline help page. There is no server, so "support" means self-he
 
 Sections:
 - [ ] **Quick start:** three short cards (how to move, how to use hints, how to read win chance and grades)
-- [ ] **FAQ (accordion):** ten or so questions. Suggested topics: what win chance means, how grading works, why the frog or chicken sometimes plays badly (difficulty), what happens offline, how to install the app (Android and iPhone steps), where data is stored, how to move a game to another device (using the backup in M23), why haptics may not work on iPhone, what "hint" does
+- [ ] **FAQ (accordion):** ten or so questions. Suggested topics: what win chance means, how grading works, why the frog or chicken sometimes plays badly (difficulty), what happens offline, how to install the app (Android and iPhone steps), where data is stored, how to move a game to another device (if backup exists), why haptics may not work on iPhone, what "hint" does
 - [ ] **Troubleshooting:** engine will not load (reload, check storage, clear cache), game not resuming, app not updating
-- [ ] **About and credits:** app version, Stockfish, chess.js, the piece set, the Lichess puzzle data (CC0), the CC0 sound pack, and libraries, each with its license (check each license text and include what it requires)
-- [ ] **Report a problem:** your personal email and LinkedIn profile, set in one config constant. No contact form and no mail sender. Include a **Copy diagnostics** button that copies app version, browser, engine status, and storage estimate (no personal data)
+- [ ] **About and credits:** app version, Stockfish, chess.js, the piece set, puzzle data source, and libraries, each with its license (check each license text and include what it requires)
+- [ ] **Report a problem:** a link to your issue tracker or an email address (set it in one config constant). Include a **Copy diagnostics** button that copies app version, browser, engine status, and storage estimate (no personal data)
 
 Done when: the page is fully readable offline and all links and the diagnostics button work.
 
@@ -418,6 +399,7 @@ Screen layout (top to bottom):
 4. **Win chance graph** across all plies. Tapping jumps to that move. Highlight the biggest drops
 5. **Move list** with grade icons (never color alone). Tapping jumps to that move
 6. **Critical moments**: your largest win-percentage drops. For each, show the move you played, the engine's better move (an arrow on the board), and a one-line reason when available
+7. Optional **"Play from here"**: start a new game from that position against the opponent
 
 Tasks:
 - [ ] `review.tsx` using the read-only board, `arrows`, and `highlights`
@@ -426,6 +408,7 @@ Tasks:
 - [ ] **Analyze game** fallback: if `analyzed` is false, run the engine over the whole game in the background with a progress bar, then save the results. Cancelable
 - [ ] Keyboard and screen-reader support for stepping through moves
 - [ ] Entry points: Result screens ("Review game"), Profile history, Home "Analysis" card
+- [ ] "Play from here" needs the New game flow to accept a starting FEN (keep it optional)
 - [ ] Tests: graph data, critical-moment selection, analyze-game fallback
 
 Done when: any saved game can be replayed with a correct graph, arrows for better moves, and no engine work needed for already-analyzed games.
@@ -436,7 +419,7 @@ Done when: any saved game can be replayed with a correct graph, arrows for bette
 
 Goal: tab navigation and the Home screen from the mockup.
 
-Bottom navigation: Home, Puzzles, Learn, Profile, using the spec's navigation styling. Keep it visible only on tab routes. The active tab uses the theme's accent color (blue in dark, orange in light) plus a label (never color alone). It respects the iOS safe area. Android back from a tab root should behave sensibly.
+Bottom navigation: Home, Puzzles, Learn, Profile, using the spec's navigation styling. Keep it visible only on tab routes. Active tab uses the blue accent plus a label (never color alone). It respects the iOS safe area. Android back from a tab root should behave sensibly.
 
 Home layout:
 - [ ] Header: greeting by time of day with the display name, day streak (flame), and a Settings gear
@@ -446,7 +429,7 @@ Home layout:
 - [ ] **Analysis card:** "Review your games" opens the latest game review or the history list
 - [ ] **Recent progress:** win rate ring and puzzles solved
 - [ ] Friendly empty states for a brand-new player
-- [ ] Landing now ends in Home (D3). Landing has no resume button. Home handles resume
+- [ ] Landing now ends in Home (D3). Remove "Resume battle" from Landing or keep it only if Landing can still appear
 
 Done when: all four tabs navigate correctly, the nav hides on full-screen flows, and Home reflects real data.
 
@@ -456,7 +439,7 @@ Done when: all four tabs navigate correctly, the nav hides on full-screen flows,
 
 Goal: the mockup's Profile screen, from local data.
 
-- [ ] Header: animal avatar (follows theme), editable display name (D7), Settings gear
+- [ ] Header: animal avatar (follows theme), editable display name (D7), optional level (D10), Settings gear
 - [ ] **Win rate** ring with wins out of total, and the W / L / D record
 - [ ] **Streaks:** current day streak and best win streak
 - [ ] **Recent performance:** accuracy bars for the last 10 games (hand-drawn SVG). Tapping a bar opens that review
@@ -480,6 +463,7 @@ Starter badge set (rules are computed from stored data):
 | Graduate | Complete a full Learn track |
 
 - [ ] `logic/stats.ts`, `streak.ts`, `badges.ts` as pure functions with unit tests (streak around midnight, timezone changes, empty history, ties)
+- [ ] Optional (D10): XP and level. For example 10 XP per game, 30 per win, 5 per puzzle, 20 per lesson, with level thresholds
 
 Done when: with seeded fake data, every number and badge is correct, and with no data every section has a clear empty state.
 
@@ -489,7 +473,7 @@ Done when: with seeded fake data, every number and badge is correct, and with no
 
 Goal: an offline puzzle trainer using a bundled puzzle set.
 
-**Data source and license.** Use the Lichess puzzle database, released under CC0 and free to redistribute (confirmed). Credit Lichess in Help anyway as a courtesy.
+**Data source and license.** Use the Lichess puzzle database. Its official page documents the format and describes it as open data. Third-party projects describe it as CC0, so confirm the license on the Lichess site yourself before shipping, and credit the source in Help.
 
 **Format facts (from the Lichess documentation):**
 - CSV fields include `PuzzleId, FEN, Moves, Rating, RatingDeviation, Popularity, NbPlays, Themes, ...`
@@ -536,16 +520,12 @@ Goal: short, interactive lessons written by you, so there are no content license
 
 Structure: **Tracks, Lessons, Steps.** The animal acts as the narrator in the speech bubble.
 
-**v1 ships 10 lessons (marked v1). The other lessons go to the backlog.**
-
-| Track | Lessons |
+| Track | Lessons (v1 target, about 16 total) |
 |---|---|
-| Basics | **v1:** the board and pieces, how each piece moves, check, checkmate and stalemate. Backlog: special moves (castling, en passant, promotion), reading chess notation |
-| Tactics | **v1:** fork, pin, back-rank mate. Backlog: skewer, discovered attack. Each ends with "Practice these puzzles", linking to the matching puzzle theme |
-| Openings | **v1:** opening principles. Backlog: a simple e4 opening, a simple d4 opening |
-| Endgames | **v1:** king and queen vs king, king and rook vs king. Backlog: opposition and pawn promotion |
-
-That gives 10 in v1: 4 Basics, 3 Tactics, 1 Openings, 2 Endgames.
+| Basics | The board and pieces, how each piece moves, special moves (castling, en passant, promotion), check, checkmate and stalemate, reading chess notation |
+| Tactics | Fork, pin, skewer, discovered attack, back-rank mate. Each ends with "Practice these puzzles", linking to the matching puzzle theme |
+| Openings | Opening principles, a simple e4 opening, a simple d4 opening |
+| Endgames | King and queen vs king, king and rook vs king, opposition and pawn promotion |
 
 Step types:
 - **text:** a short explanation
@@ -563,14 +543,14 @@ Tasks:
 - [ ] Count a finished lesson as an activity day
 - [ ] Write the lesson copy in a friendly, short tone (about 2 to 3 sentences per step). Keep content separate from code so it is easy to edit
 
-Done when: all 10 v1 lessons run end to end offline, the validation test passes, and progress shows on Home and Profile.
+Done when: all v1 lessons run end to end offline, the validation test passes, and progress shows on Home and Profile.
 
 ---
 
 ### M31. Integration and polish (M)
 
 - [ ] Home cards, Profile stats, badges, and streak all react to the same stored data
-- [ ] Cross-links: Learn tactics link to puzzle themes, Help links to Settings
+- [ ] Cross-links: Learn tactics link to puzzle themes, review links to "Play from here", Help links to Settings
 - [ ] Empty states, loading states (skeletons), and error states for every new screen
 - [ ] Page transitions (short, with a reduced-motion alternative)
 - [ ] Opponent personality pass: voice and mood use across new screens, chicken bank at least as rich as the frog's
@@ -582,15 +562,15 @@ Done when: all 10 v1 lessons run end to end offline, the validation test passes,
 ### M32. QA, performance, and release (M)
 
 - [ ] Test matrix: dark and light, frog and chicken, Play as White and Black, 360, 390, and 430 px widths, Android Chrome, iOS Safari (installed and in browser), desktop
-- [ ] Theme lock cases: start a battle and flip the device theme (System mode) and confirm nothing changes; leave mid-game and confirm the Settings theme row is disabled; finish or clear the battle and confirm the pending theme applies after the result screen closes; update from the MVP with a saved battle on a light-mode device and confirm it resumes as dark with the frog; confirm puzzles and lessons use the battle's theme while a battle exists
+- [ ] Theme lock cases: start a battle and flip the device theme (System mode) and confirm nothing changes; leave mid-game and confirm the Settings theme row is disabled; finish or clear the battle and confirm the pending theme applies after the result screen closes; update from the MVP with a saved battle on a light-mode device and confirm it resumes as dark with the frog
 - [ ] Offline: load once online, then airplane mode and exercise every tab, a full game, a puzzle, a lesson, a review, and settings changes
 - [ ] Performance: entry chunk size, route chunk sizes, animation at 60 fps, no long main-thread tasks during engine work, memory use on a mid-range phone
 - [ ] Data safety: migration from the MVP's saved battle, corrupt data handling, storage full, private browsing, a large history (1,000 games)
 - [ ] Update flow: ship an update with a schema migration and confirm installed users keep their data
 - [ ] Accessibility pass (section 8) with a screen reader on at least one platform
 - [ ] Lighthouse PWA and accessibility audits
-- [ ] Update the README, credits, and license notices (Lichess CC0 data, CC0 sound pack, Stockfish, chess.js, piece set, fonts)
-- [ ] Tag a version, deploy to Netlify, and verify the live install
+- [ ] Update the README, credits, and license notices
+- [ ] Tag a version, deploy, and verify the live install
 
 ---
 
@@ -622,13 +602,13 @@ M31 Integration → M32 QA and release
 | E. Content | M29, M30 | The largest pieces, built on stable foundations |
 | F. Finish | M31, M32 | Integration and release |
 
-Rough effort: about 4 S/M items in Phase A and B, then four heavier items (M26, M29, M30, and M28) that make up most of the remaining time. Expect roughly **8 to 12 weeks** for one developer. Learn is now 10 lessons, so it is at the lower end of that range.
+Rough effort: about 4 S/M items in Phase A and B, then four heavier items (M26, M29, M30, and M28) that make up most of the remaining time. Expect roughly **8 to 12 weeks** for one developer, depending on how much Learn content you write.
 
 ---
 
 ## 7. Opponent voice: chicken starter lines
 
-The chicken has its own word bank (D2). It never reuses frog lines. Starter lines, to be expanded:
+Same categories as the frog bank. Starter lines, to be expanded:
 
 ```ts
 chickenLines = {
@@ -677,17 +657,22 @@ Keep every line playful and never mean.
 | Light mode makes pieces or grade colors hard to read | Contrast-check both piece colors on both squares, and every grade color, before building on top |
 | Puzzle data bugs (illegal moves, wrong side) | Validate every puzzle in the build script, and test the flow state machine |
 | Mate-in-one alternatives rejected as "wrong" | Implement the "any checkmate wins" rule explicitly, with a test |
-| Learn content is large and slow to write | Ship 10 lessons in v1 and keep the rest in the backlog. Content stays separate from code |
+| Learn content is large and slow to write | Ship about 10 solid lessons first, keep the rest in the backlog. Content stays separate from code |
 | Local storage can be evicted (especially iOS) | `navigator.storage.persist()`, plus backup and restore (D9) |
 | Bundle growth hurts first load | Lazy-load routes, load puzzle buckets on demand, hand-drawn SVG charts instead of a chart library |
 | Schema changes break old data | Versioned migrations with tests, and a migration step in the QA checklist |
 | Licenses (pieces, puzzle data, audio, fonts) | Keep a credits and license list in Help, and check each license text before shipping |
 | Sound and haptics vary by platform | Treat them as progressive enhancement, and show unsupported states clearly |
-| Scope creep from the mockup | Keep Daily Challenge, sidebar, accounts, online features, "Play from here", and XP and levels out of this phase |
-| Light palette is warm, so the chicken and the light theme must match | Use the same warm palette for the chicken's colors and the board, and review both in the screenshot tests |
+| Scope creep from the mockup | Keep Daily Challenge, sidebar, accounts, and online features out of this phase |
 
 ---
 
 ## 10. Open questions
 
-None. Every decision is resolved and recorded in section 2. The plan is ready for M18.
+1. Confirm decisions D1 to D10 (especially D1 and D2: the theme controls the animal, and the theme is locked while a battle exists).
+2. Should Settings also offer a manual **Opponent** override (for example chicken in dark mode)? It is a small addition, but it breaks the pure "theme decides" rule.
+3. Do you want the optional **XP and Level** system (D10)?
+4. Do you want backup and restore (D9) in this phase?
+5. Where should "Report a problem" point (an email address or an issue tracker URL)?
+6. Preferred light-mode board colors (keep the same blues, or a warmer set to match the chicken)?
+7. The theme lock applies to battles only. Puzzles and lessons just use the current theme's animal. Is that okay?

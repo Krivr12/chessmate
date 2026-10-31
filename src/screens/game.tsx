@@ -14,6 +14,7 @@ import { AppHeader } from '@/components/layout/app-header'
 import { ConfirmDialog } from '@/components/layout/confirm-dialog'
 import { ResultScreen } from '@/components/result/result-screen'
 import { capturedFromMoves, materialBalance } from '@/logic/captured'
+import { gameIdFor } from '@/logic/game-record'
 import { DIFFICULTIES } from '@/logic/difficulty'
 import { OPPONENTS } from '@/logic/opponents'
 import { isActivePhase, useGameStore } from '@/store/game-store'
@@ -28,6 +29,7 @@ export default function Game() {
       phase: st.phase,
       difficulty: st.difficulty,
       opponent: st.opponent,
+      startedAt: st.startedAt,
       startFen: st.startFen,
       playerColor: st.playerColor,
       moves: st.moves,
@@ -192,6 +194,10 @@ export default function Game() {
               // Closing the result screen ends the battle's theme lock (D2).
               useThemeLock.getState().unlock()
               navigate('/')
+            }}
+            onReview={() => {
+              useThemeLock.getState().unlock()
+              navigate(`/review/${gameIdFor(s.startedAt)}`)
             }}
           />
         )}

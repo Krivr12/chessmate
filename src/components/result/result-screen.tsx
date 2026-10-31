@@ -50,10 +50,12 @@ type ResultScreenProps = {
   moves: MoveRecord[]
   onPlayAgain: () => void
   onHome: () => void
+  /** Opens the review of this finished game. */
+  onReview?: () => void
 }
 
 /** Full-screen result state of the Game page (README §6.5). */
-export function ResultScreen({ outcome, opponent, moves, onPlayAgain, onHome }: ResultScreenProps) {
+export function ResultScreen({ outcome, opponent, moves, onPlayAgain, onHome, onReview }: ResultScreenProps) {
   const reduceMotion = useReducedMotion()
   const c = CONTENT[outcome.result]
   const opponentName = OPPONENTS[opponent].name
@@ -101,6 +103,11 @@ export function ResultScreen({ outcome, opponent, moves, onPlayAgain, onHome }: 
           <Button variant={c.variant} size="lg" className={c.buttonClass} onClick={onPlayAgain}>
             {c.primary}
           </Button>
+          {onReview && (
+            <Button variant="outline" size="lg" onClick={onReview}>
+              Review game
+            </Button>
+          )}
           <Button variant="outline" size="lg" onClick={onHome}>
             Home
           </Button>
