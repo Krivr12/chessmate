@@ -16,6 +16,8 @@ import { pickLine, type TalkCategory } from '@/logic/trash-talk'
 import type { Difficulty, Grade, Mood, MoveRecord, Outcome, SavedBattle } from '@/logic/types'
 import { playerWinPercent } from '@/logic/win-percent'
 import { clearBattle } from '@/storage/battle-storage'
+import { saveFinishedGame } from '@/storage/games'
+import { buildGameRecord } from '@/logic/game-record'
 
 /** Tunable timings (tests set these to 0). */
 export const timing = { minThinkMs: 700, analysisMs: 250 }
@@ -29,7 +31,24 @@ export type Phase = 'idle' | 'player' | 'grading' | 'opponent' | 'stalled' | 'ov
 
 export type Commentary = { id: number; grade: Grade | null; line: string; mood: Mood }
 
-type Analysis = { fen: string; win: number; best: string | null }
+type Analysis = {
+  fen: string
+  win: number
+  best: string | null
+  /** Evaluation from the player's point of view. */
+  cp: number | null
+  mate: number | null
+}
+
+/** Engine scores come from the side to move. Flip them to the player's point of view. */
+const fromPlayerView = (v: number | null, playerToMove: boolean) => (v === null || playerToMove ? v : -v)
+
+/** Adds the opponent's evaluation to its last move, once the engine has scored that position. */
+function withOpponentEval(moves: MoveRecord[], a: Analysis): MoveRecord[] {
+  const last = moves.at(-1)
+  if (!last || last.by !== 'opponent' || last.winAfter !== undefined) return moves
+  return [...moves.slice(0, -1), { ...last, winAfter: a.win, cp: a.cp ?? undefined, mate: a.mate ?? undefined }]
+}
 
 /** Piece a pawn can promote to. Chosen in the promotion picker or taken from an engine move. */
 export type PromotionPiece = 'q' | 'r' | 'b' | 'n'
@@ -96,6 +115,9 @@ let commentId = 0
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const toUci = (m: Pick<Move, 'from' | 'to' | 'promotion'>) => m.from + m.to + (m.promotion ?? '')
+
+/** Win % for a finished game, from the player's point of view. */
+const resultPercent = (o: Outcome) => (o.result === 'win' ? 100 : o.result === 'draw' ? 50 : 0)
 
 /** Word bank of the battle's opponent. Set when a battle starts or resumes. */
 let activeLines = OPPONENTS.frog.lines
@@ -177,7 +199,16 @@ export const useGameStore = create<GameState>()((set, get) => {
       const sideToMove = fen.split(' ')[1] as Color
       p = engine
         .analyze(fen, timing.analysisMs)
-        .then((r) => ({ fen, best: r.best, win: playerWinPercent(r, sideToMove, playerColor) }))
+        .then((r) => {
+          const playerToMove = sideToMove === playerColor
+          return {
+            fen,
+            best: r.best,
+            cp: fromPlayerView(r.cp, playerToMove),
+            mate: fromPlayerView(r.mate, playerToMove),
+            win: playerWinPercent(r, sideToMove, playerColor),
+          }
+        })
       p.catch(() => analysisCache.delete(key))
       analysisCache.set(key, p)
     }
@@ -190,7 +221,9 @@ export const useGameStore = create<GameState>()((set, get) => {
     const fen = game.fen()
     ensureAnalysis(fen).then(
       (a) => {
-        if (token === get().token && get().fen === fen) set({ analysis: a, winChance: a.win })
+        if (token === get().token && get().fen === fen) {
+          set({ analysis: a, winChance: a.win, moves: withOpponentEval(get().moves, a) })
+        }
       },
       () => {},
     )
@@ -199,6 +232,22 @@ export const useGameStore = create<GameState>()((set, get) => {
   const finish = (outcome: Outcome) => {
     playSound(outcome.result === 'win' ? 'win' : outcome.result === 'loss' ? 'lose' : 'move')
     vibrate('strong')
+    const s = get()
+    // Save the finished game once. The record id comes from the battle start, so a repeat call overwrites it.
+    if (s.moves.length > 0) {
+      void saveFinishedGame(
+        buildGameRecord({
+          startedAt: s.startedAt,
+          endedAt: Date.now(),
+          startFen: s.startFen,
+          playerColor: s.playerColor,
+          difficulty: s.difficulty,
+          opponent: s.opponent,
+          moves: s.moves,
+          outcome,
+        }),
+      )
+    }
     const category: TalkCategory =
       outcome.result === 'win' ? 'playerWins' : outcome.result === 'loss' ? 'playerLoses' : 'draw'
     const mood: Mood = outcome.result === 'win' ? 'sad' : outcome.result === 'loss' ? 'happy' : 'idle'
@@ -230,12 +279,15 @@ export const useGameStore = create<GameState>()((set, get) => {
     const move = game.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] })
     playSound(soundForMove(move))
     vibrate('move')
+    // If this move ends the game, score it from the result so the saved record has an evaluation.
+    const endOutcome = getOutcome(game, playerColor)
     const record: MoveRecord = {
       from: move.from,
       to: move.to,
       promotion: move.promotion,
       san: move.san,
       by: 'opponent',
+      ...(endOutcome ? { winAfter: resultPercent(endOutcome) } : {}),
     }
     const s = get()
     let commentary = s.commentary
@@ -268,10 +320,12 @@ export const useGameStore = create<GameState>()((set, get) => {
       before = null
     }
     let winAfter: number | undefined
-    if (outcome) winAfter = outcome.result === 'win' ? 100 : outcome.result === 'draw' ? 50 : 0
+    let after: Analysis | null = null
+    if (outcome) winAfter = resultPercent(outcome)
     else {
       try {
-        winAfter = (await ensureAnalysis(afterFen)).win
+        after = await ensureAnalysis(afterFen)
+        winAfter = after.win
       } catch {
         winAfter = undefined
       }
@@ -284,7 +338,17 @@ export const useGameStore = create<GameState>()((set, get) => {
         ? gradeMove(before.win, winAfter, before.best === toUci(move))
         : undefined
     const moves = s.moves.map((m, i) =>
-      i === index ? { ...m, winBefore: before?.win, winAfter, grade } : m,
+      i === index
+        ? {
+            ...m,
+            winBefore: before?.win,
+            winAfter,
+            grade,
+            cp: after?.cp ?? undefined,
+            mate: after?.mate ?? undefined,
+            bestBefore: before?.best ?? undefined,
+          }
+        : m,
     )
     set({
       moves,

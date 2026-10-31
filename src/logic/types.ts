@@ -19,6 +19,12 @@ export type MoveRecord = {
   /** Player's win % after this move. */
   winAfter?: number
   grade?: Grade
+  /** Engine evaluation after this move, from the player's point of view (centipawns). */
+  cp?: number
+  /** Mate in N after this move, from the player's point of view. Set instead of cp when mate is found. */
+  mate?: number
+  /** Engine's best move (UCI) before a player move. Used for review and the accuracy check. */
+  bestBefore?: string
 }
 
 export type Outcome = {

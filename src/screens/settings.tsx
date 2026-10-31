@@ -6,6 +6,7 @@ import { ConfirmDialog } from '@/components/layout/confirm-dialog'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { DataSection } from '@/components/settings/data-section'
 import { unlockAudio } from '@/lib/sound'
 import { hapticsSupported } from '@/lib/haptics'
 import { DIFFICULTIES, DIFFICULTY_ORDER, isDifficulty } from '@/logic/difficulty'
@@ -220,13 +221,7 @@ export default function Settings() {
         />
       </Section>
 
-      <Section title="Data">
-        <Row
-          label="Storage and backup"
-          note="Clear data, storage usage, and backup arrive in a later update."
-          control={<span className="text-xs text-text-secondary">Soon</span>}
-        />
-      </Section>
+      <DataSection />
 
       <Section title="Help">
         <Link to="/help" className="flex min-h-14 items-center justify-between px-4 py-3 text-sm font-medium text-text-primary">
