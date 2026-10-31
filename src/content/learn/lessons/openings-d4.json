@@ -1,0 +1,11 @@
+{
+  "id": "openings-d4",
+  "title": "The d4 opening",
+  "track": "openings",
+  "order": 3,
+  "steps": [
+    { "type": "text", "title": "1. d4", "body": "1. d4 takes the centre with a pawn that the queen protects. It is solid, and it is hard for the opponent to attack." },
+    { "type": "demo", "title": "The Queen's Gambit", "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "moves": ["d2d4", "d7d5", "c2c4"], "body": "White's pawn to c4 attacks the black pawn on d5. Black can accept or decline the pawn. Either way, White keeps the centre." },
+    { "type": "try-it", "title": "Your move", "body": "Black played 1... d5. Continue with c4, the Queen's Gambit.", "fen": "rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq d6 0 2", "answers": ["c2c4"], "hint": "Move the pawn on c2 two squares forward.", "success": "Yes. The c4 pawn attacks the d5 pawn." }
+  ]
+}

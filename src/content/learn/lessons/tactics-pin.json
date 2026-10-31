@@ -1,0 +1,13 @@
+{
+  "id": "tactics-pin",
+  "title": "Pins",
+  "track": "tactics",
+  "order": 2,
+  "practice": { "label": "Practice these puzzles", "theme": "pin" },
+  "steps": [
+    { "type": "text", "title": "What is a pin?", "body": "A pin stops a piece from moving, because moving it would expose a more valuable piece behind it." },
+    { "type": "demo", "title": "The pinned knight", "fen": "4k3/4n3/8/8/8/8/8/4R1K1 b - - 0 1", "moves": [], "body": "The rook on e1 pins the knight on e7 to the king on e8. If the knight moves, the rook gives check." },
+    { "type": "try-it", "title": "Use the pin", "body": "The knight is pinned. Capture it with the rook.", "fen": "4k3/4n3/8/8/8/8/8/4R1K1 w - - 0 1", "answers": ["e1e7"], "hint": "The rook slides up the e-file to the knight.", "success": "The pinned piece is gone. Good work." },
+    { "type": "quiz", "question": "Why can the knight on e7 not move?", "options": ["It would expose the king to the rook", "It has no legal moves", "A pawn is blocking it"], "answer": 0, "explanation": "The king is behind the knight on the same file, so moving the knight would let the rook attack it." }
+  ]
+}

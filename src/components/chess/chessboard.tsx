@@ -16,80 +16,59 @@ const DEFAULT_ARROW_COLOR = '#FF8F93'
 
 export type BoardArrow = { from: Square; to: Square; color?: string }
 
-export type ChessboardProps = {
-  /** Show this position instead of the live game. Board becomes read-only. */
-  fen?: string
-  /** Disable moves. The live position still shows when no `fen` is given. */
-  readOnly?: boolean
-  /** Side at the bottom of the board. Defaults to the player's color. */
-  orientation?: Color
-  /** Square tints, for example `{ e4: '#FFE17A' }`. */
-  highlights?: Partial<Record<Square, string>>
-  /** Arrows drawn over the board (for example the engine's better move). */
-  arrows?: BoardArrow[]
-}
-
-/** The subset of game state the board renders. */
-type BoardView = {
+/** Everything the board draws. Screens build this from their own state (game, puzzle, lesson). */
+export type BoardView = {
   pieces: PieceState[]
   selected: Square | null
   legalTargets: Square[]
   lastMove: { from: Square; to: Square } | null
   checkSquare: Square | null
+  /** Squares to mark for a hint. `from` gets a ring; `to` too when the hint shows a destination. */
   hint: { from: Square; to: Square } | null
   pendingPromotion: { from: Square; to: Square } | null
-  playerColor: Color
-  phase: string
+  /** Color of the promoting pawn, used to draw the promotion choices. */
+  promotionColor: Color
+  /** Called when a square is tapped. */
   selectSquare: (square: Square) => void
   choosePromotion: (piece: PromotionPiece) => void
   cancelPromotion: () => void
 }
 
-/** A static view: no selection, no overlays, no promotion, and no clicks. */
-function readOnlyView(live: BoardView, fen?: string): BoardView {
-  return {
-    ...live,
-    pieces: fen ? initialPieces(fen) : live.pieces,
-    selected: null,
-    legalTargets: [],
-    lastMove: null,
-    checkSquare: null,
-    hint: null,
-    pendingPromotion: null,
-    selectSquare: () => {},
-    choosePromotion: () => {},
-    cancelPromotion: () => {},
-  }
+export type BoardSurfaceProps = {
+  view: BoardView
+  /** Draw Black at the bottom. */
+  flipped: boolean
+  /** Mark the board as disabled for assistive tech (taps are still passed to `selectSquare`). */
+  locked?: boolean
+  /** Tint the last move's squares when the move is known. */
+  highlightLast?: boolean
+  /** Square tints, for example `{ e4: '#FFE17A' }`. */
+  highlights?: Partial<Record<Square, string>>
+  /** Arrows drawn over the board. */
+  arrows?: BoardArrow[]
+  label?: string
 }
 
-export function Chessboard({ fen, readOnly = false, orientation, highlights, arrows = [] }: ChessboardProps = {}) {
-  const live = useGameStore(
-    useShallow((st) => ({
-      pieces: st.pieces,
-      selected: st.selected,
-      legalTargets: st.legalTargets,
-      lastMove: st.lastMove,
-      checkSquare: st.checkSquare,
-      hint: st.hint,
-      pendingPromotion: st.pendingPromotion,
-      playerColor: st.playerColor,
-      phase: st.phase,
-      selectSquare: st.selectSquare,
-      choosePromotion: st.choosePromotion,
-      cancelPromotion: st.cancelPromotion,
-    })),
-  )
-  const s = readOnly || fen !== undefined ? readOnlyView(live, fen) : live
+/**
+ * Presentational board. It knows nothing about the game store, so the live game, the review,
+ * puzzles, and lessons all share the same squares, pieces, arrows, and promotion picker.
+ */
+export function BoardSurface({
+  view: s,
+  flipped,
+  locked = false,
+  highlightLast = true,
+  highlights,
+  arrows = [],
+  label = 'Chessboard',
+}: BoardSurfaceProps) {
   const reduceMotion = useReducedMotion()
-  const highlightLast = useSettingsStore((st) => st.highlightLastMove)
-  const flipped = (orientation ?? s.playerColor) === 'b'
   const [focusSquare, setFocusSquare] = useState<Square>(flipped ? 'e7' : 'e2')
   const refs = useRef(new Map<Square, HTMLButtonElement>())
   const markerBase = useId().replace(/:/g, '')
 
   const onBoard = s.pieces.filter((p) => p.square !== null)
   const bySquare = new Map(onBoard.map((p) => [p.square as Square, p]))
-  const locked = readOnly || fen !== undefined || s.phase !== 'player'
 
   // One arrowhead marker per color, so every arrow keeps its own tint.
   const arrowColors = [...new Set(arrows.map((a) => a.color ?? DEFAULT_ARROW_COLOR))]
@@ -128,7 +107,7 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
     <div
       className="relative aspect-square w-full touch-manipulation overflow-hidden rounded-lg border border-border select-none"
       role="grid"
-      aria-label="Chessboard"
+      aria-label={label}
       aria-disabled={locked}
     >
       <div className="grid h-full w-full grid-cols-8 grid-rows-8">
@@ -140,7 +119,7 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
           const isLast = highlightLast && (s.lastMove?.from === sq || s.lastMove?.to === sq)
           const isHint = s.hint?.from === sq || s.hint?.to === sq
           const tint = highlights?.[sq]
-          const label = [
+          const labelText = [
             sq,
             piece ? `${piece.color === 'w' ? 'white' : 'black'} ${PIECE_NAMES[piece.type]}` : 'empty',
             s.selected === sq && 'selected',
@@ -160,7 +139,7 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
               }}
               type="button"
               role="gridcell"
-              aria-label={label}
+              aria-label={labelText}
               tabIndex={sq === focusSquare ? 0 : -1}
               onFocus={() => setFocusSquare(sq)}
               onKeyDown={(e) => onKeyDown(e, sq)}
@@ -282,11 +261,76 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
         <PromotionPicker
           square={s.pendingPromotion.to}
           flipped={flipped}
-          color={s.playerColor}
+          color={s.promotionColor}
           onChoose={s.choosePromotion}
           onCancel={s.cancelPromotion}
         />
       )}
     </div>
+  )
+}
+
+export type ChessboardProps = {
+  /** Show this position instead of the live game. Board becomes read-only. */
+  fen?: string
+  /** Disable moves. The live position still shows when no `fen` is given. */
+  readOnly?: boolean
+  /** Side at the bottom of the board. Defaults to the player's color. */
+  orientation?: Color
+  /** Square tints, for example `{ e4: '#FFE17A' }`. */
+  highlights?: Partial<Record<Square, string>>
+  /** Arrows drawn over the board (for example the engine's better move). */
+  arrows?: BoardArrow[]
+}
+
+/** A static view: no selection, no overlays, no promotion, and no clicks. */
+function readOnlyView(live: BoardView, fen?: string): BoardView {
+  return {
+    ...live,
+    pieces: fen ? initialPieces(fen) : live.pieces,
+    selected: null,
+    legalTargets: [],
+    lastMove: null,
+    checkSquare: null,
+    hint: null,
+    pendingPromotion: null,
+    selectSquare: () => {},
+    choosePromotion: () => {},
+    cancelPromotion: () => {},
+  }
+}
+
+/** The live game board: reads the game store and passes the view to `BoardSurface`. */
+export function Chessboard({ fen, readOnly = false, orientation, highlights, arrows = [] }: ChessboardProps = {}) {
+  const live = useGameStore(
+    useShallow((st): BoardView => ({
+      pieces: st.pieces,
+      selected: st.selected,
+      legalTargets: st.legalTargets,
+      lastMove: st.lastMove,
+      checkSquare: st.checkSquare,
+      hint: st.hint,
+      pendingPromotion: st.pendingPromotion,
+      promotionColor: st.playerColor,
+      selectSquare: st.selectSquare,
+      choosePromotion: st.choosePromotion,
+      cancelPromotion: st.cancelPromotion,
+    })),
+  )
+  const phase = useGameStore((st) => st.phase)
+  const playerColor = useGameStore((st) => st.playerColor)
+  const highlightLast = useSettingsStore((st) => st.highlightLastMove)
+  const isReadOnly = readOnly || fen !== undefined
+  const view = isReadOnly ? readOnlyView(live, fen) : live
+  const flipped = (orientation ?? playerColor) === 'b'
+  return (
+    <BoardSurface
+      view={view}
+      flipped={flipped}
+      locked={isReadOnly || phase !== 'player'}
+      highlightLast={highlightLast}
+      highlights={highlights}
+      arrows={arrows}
+    />
   )
 }

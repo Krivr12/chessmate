@@ -1,0 +1,13 @@
+{
+  "id": "tactics-fork",
+  "title": "Forks",
+  "track": "tactics",
+  "order": 1,
+  "practice": { "label": "Practice these puzzles", "theme": "fork" },
+  "steps": [
+    { "type": "text", "title": "What is a fork?", "body": "A fork is one piece attacking two targets at once. Knights are great at forks, because their jumps can land on squares that attack two pieces." },
+    { "type": "demo", "title": "The knight fork", "fen": "r3k3/8/8/3N4/8/8/8/4K3 w - - 0 1", "moves": ["d5c7"], "body": "The knight jumps to c7. From there it attacks the rook on a8 and the king on e8 at the same time." },
+    { "type": "try-it", "title": "Your fork", "body": "Find the knight move that forks the king and the rook.", "fen": "r3k3/8/8/3N4/8/8/8/4K3 w - - 0 1", "answers": ["d5c7"], "hint": "Look for a square that attacks both the king and the rook.", "success": "Fork! The king must move, and then the knight takes the rook." },
+    { "type": "quiz", "question": "Which piece made the fork?", "options": ["Bishop", "Knight", "Rook"], "answer": 1, "explanation": "The knight's L-shaped jump let it attack two pieces at once." }
+  ]
+}

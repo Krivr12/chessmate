@@ -21,7 +21,7 @@ A local, offline-first chess app with a cute animal opponent, hints, win percent
 5. Grade and label every player move (Best, Great, Good, Inaccuracy, Mistake, Blunder)
 6. Opponent trash talk based on the grade (static text bank for now)
 7. Clean custom SVG chess pieces
-8. Landing page (knight logo, name, tagline, Start button)
+8. Landing page (placeholder character icon and an Enter game button)
 9. Smooth piece movement animation
 10. Full-screen win, lose, and draw result screens with animation
 11. Undo, redo, and restart (they are in the design toolbar)
@@ -43,7 +43,7 @@ Your new design is a full puzzle app. This app is a play-against-the-AI app, and
 | Inter font | **Adopted.** Replaces Poppins. Self-host it (offline) |
 | Thin low-contrast borders (`#214C65`), subtle shadows | **Adopted.** Keep them quiet so the design stays clean. No heavy outlines |
 | Board radius 8 px, coordinates (a to h, 1 to 8), Staunton-style SVG pieces | **Adopted** (version 1 had chunky shapeless pieces and no coordinates) |
-| Landing: knight logo, name, tagline, Get Started | **Adopted** as "Start". **Dropped:** "Sign In" link and the extra description line (no accounts). If you want the stricter "icon and button only" landing, remove the name and tagline too |
+| Landing: knight logo, name, tagline, Get Started | **Adapted** to a placeholder character icon and an "Enter game" button. **Dropped:** the knight logo, app name, tagline, "Sign In" link, and the extra description line (no accounts) |
 | Home dashboard (Play Puzzle, Daily Challenge, Practice, Analysis, progress) | **Deferred.** Phase 1 goes Landing to New game to Game |
 | Bottom navigation (Home, Puzzles, Learn, Profile) and side drawer (sidebar) | **Deferred** (those destinations do not exist yet) |
 | Puzzle screen layout | **Adopted as the Game screen**, with puzzle-specific parts replaced (see section 6.3) |
@@ -72,7 +72,7 @@ Your new design is a full puzzle app. This app is a play-against-the-AI app, and
 | Routing | React Router | Two routes: `/` (Landing) and `/play` (Game). Gives proper back-button behavior on phones |
 | Styling | Tailwind CSS 4 + CSS variables | Theme setup as in spec section 8 |
 | Components | shadcn/ui | See component list below |
-| Icons | lucide-react | `strokeWidth={1.8}`, sizes from spec section 6. Custom SVG for the knight logo, pieces, frog, trophy, and toppled king |
+| Icons | lucide-react | `strokeWidth={1.8}`, sizes from spec section 6. Custom SVG for the pieces, trophy, and toppled king. The opponent faces are WebP sprites |
 | Rules | chess.js | Move validation, FEN, check, mate, draws |
 | Engine | Stockfish WASM (npm `stockfish`) | Single-threaded lite build in a Web Worker |
 | Animation | Motion (`motion/react`) | Pieces, sheets, result screens |
@@ -228,7 +228,8 @@ Grades must never rely on color alone, so each one has a color, an icon, and a l
 
 | Use | Icon |
 |---|---|
-| Logo, pieces, frog, trophy, toppled king | Custom SVG |
+| Pieces, trophy, toppled king | Custom SVG |
+| Opponent faces (frog and cat, six moods each) | WebP sprites cut from the emote sheet by `scripts/extract-opponent-sprites.mjs` |
 | Back | `ArrowLeft` |
 | Overflow menu | `EllipsisVertical` |
 | Undo, Redo, Restart | `Undo2`, `Redo2`, `RefreshCw` |
@@ -246,15 +247,15 @@ Assume a mobile viewport near 390 × 844 CSS px, and adapt to real safe areas. C
 ### 6.1 Landing
 
 - Full-height `#061824`, optional faint geometric shapes in muted blue
-- Knight logo (64 to 80 px), app name (32 px bold), tagline ("Think. Move. Improve.")
-- Primary **Start** button near the bottom (blue, with `ArrowRight`)
-- If a saved battle exists, show **Resume battle** (secondary) above or beside Start
+- Placeholder character icon (a human outline, about 112 px) until the final art is added. No app name or tagline
+- Primary **Enter game** button near the bottom (blue). It opens Home, and Landing is the first screen on every app open
+- Resume battle lives on Home, not on Landing
 - Starts downloading and initializing the engine in the background (see section 9)
 
 ### 6.2 New game sheet
 
-A small bottom `Sheet` opened by Start (or "New game" in the game menu). It is part of the Landing and Game pages, not a separate page, and it is the only place difficulty is chosen because there is no Settings page. To cut scope further, drop it and default to Medium. It contains:
-- Difficulty `ToggleGroup`: Easy, Medium, Hard (with the frog's name or face per level)
+A small bottom `Sheet` opened by New game on Home (or in the game menu). It is part of the Landing and Game pages, not a separate page, and it is the only place difficulty is chosen because there is no Settings page. To cut scope further, drop it and default to Medium. It contains:
+- Difficulty `ToggleGroup`: Easy, Medium, Hard, each with its engine strength (10%, 50%, 100%)
 - Play button (mint)
 - Remembers the last chosen difficulty
 

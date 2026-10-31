@@ -1,0 +1,12 @@
+{
+  "id": "tactics-back-rank",
+  "title": "Back-rank mate",
+  "track": "tactics",
+  "order": 5,
+  "practice": { "label": "Practice these puzzles", "theme": "backRankMate" },
+  "steps": [
+    { "type": "text", "title": "What is a back-rank mate?", "body": "The king is trapped on its first rank by its own pawns. A rook or queen then gives check along that rank, and the king cannot escape." },
+    { "type": "demo", "title": "The trap", "fen": "6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1", "moves": ["a1a8"], "body": "Rook to a8 is checkmate. The pawns on f7, g7, and h7 block every escape square." },
+    { "type": "try-it", "title": "Find the mate", "body": "Deliver the mate with the rook.", "fen": "6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1", "answers": ["a1a8"], "hint": "Find the rook move onto the eighth rank.", "success": "Checkmate! The pawns trapped their own king." }
+  ]
+}

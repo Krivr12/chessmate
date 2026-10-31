@@ -1,0 +1,11 @@
+{
+  "id": "endgames-pawns",
+  "title": "Opposition and promotion",
+  "track": "endgames",
+  "order": 3,
+  "steps": [
+    { "type": "text", "title": "Opposition", "body": "Many pawn endings are decided by opposition: your king stands directly in front of the enemy king with one square between them. The side that must move usually loses ground." },
+    { "type": "quiz", "question": "What is opposition?", "options": ["Kings facing each other with one square between them", "Two pawns on the same file", "A pawn about to promote"], "answer": 0, "explanation": "Opposition is when the kings face each other with one square between them." },
+    { "type": "try-it", "title": "Promote", "body": "Push the pawn on a7 to a8 and promote it to a queen.", "fen": "8/P7/8/8/8/8/8/k6K w - - 0 1", "answers": ["a7a8q"], "hint": "Pawns promote on the last rank. Choose the queen.", "success": "Queen! The pawn is now the strongest piece on the board." }
+  ]
+}

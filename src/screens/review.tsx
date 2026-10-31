@@ -158,8 +158,7 @@ export default function Review() {
         <div className="flex min-w-0 flex-col">
           <h1 className="text-lg font-bold text-text-primary">Game review</h1>
           <p className="truncate text-xs text-text-secondary">
-            vs {OPPONENTS[record.opponent].name} ({OPPONENTS[record.opponent].difficultyNames[record.difficulty]} ·{' '}
-            {DIFFICULTY[record.difficulty]}) · {RESULT[record.result]}
+            vs {OPPONENTS[record.opponent].name} ({DIFFICULTY[record.difficulty]}) · {RESULT[record.result]}
           </p>
         </div>
       </header>

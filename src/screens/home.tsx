@@ -12,18 +12,11 @@ import { computeStats, type ProfileStats } from '@/logic/stats'
 import type { Difficulty } from '@/logic/types'
 import { listGames } from '@/storage/games'
 import { getActivityDays } from '@/storage/activity'
-import { getDisplayName } from '@/storage/profile'
+import { getContinueLesson, getExtraProgress } from '@/storage/progress'
 import { loadBattle } from '@/storage/battle-storage'
 import { isActivePhase, useGameStore } from '@/store/game-store'
 import { useSettingsStore } from '@/store/settings-store'
 import { resolveTheme } from '@/store/theme'
-
-/** Morning, afternoon, or evening, from the device clock. */
-function greeting(hour: number) {
-  if (hour < 12) return 'Good morning'
-  if (hour < 18) return 'Good afternoon'
-  return 'Good evening'
-}
 
 /** Card with a title, a short line of text, and a call to action. Used for the feature shortcuts. */
 function ShortcutCard({
@@ -62,21 +55,34 @@ export default function Home() {
   const settingsTheme = useSettingsStore((st) => st.theme)
   const opponentName = OPPONENTS[opponentForTheme(resolveTheme(settingsTheme))].name
 
-  const [name, setName] = useState('Player')
   const [stats, setStats] = useState<ProfileStats | null>(null)
   const [latestGameId, setLatestGameId] = useState<string | null>(null)
   const [hasSavedBattle, setHasSavedBattle] = useState(false)
+  const [puzzlesSolved, setPuzzlesSolved] = useState(0)
+  const [continueLesson, setContinueLesson] = useState<{ id: string; title: string; stepsDone: number; total: number } | null>(null)
   const [newGameOpen, setNewGameOpen] = useState(false)
   const [confirmReplace, setConfirmReplace] = useState<{ difficulty: Difficulty; color: Color } | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([getDisplayName(), listGames(), getActivityDays(), loadBattle()]).then(([n, games, days, battle]) => {
+    Promise.all([listGames(), getActivityDays(), loadBattle()]).then(([games, days, battle]) => {
       if (cancelled) return
-      setName(n)
       setStats(computeStats(games, days, dateKey(Date.now())))
       setLatestGameId(games[0]?.id ?? null)
       setHasSavedBattle(battle !== null)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    void getExtraProgress().then((x) => {
+      if (!cancelled) setPuzzlesSolved(x.puzzlesSolved)
+    })
+    void getContinueLesson().then((l) => {
+      if (!cancelled) setContinueLesson(l)
     })
     return () => {
       cancelled = true
@@ -96,14 +102,12 @@ export default function Home() {
   }
 
   const hasBattle = battleActive || hasSavedBattle
-  const firstName = name.split(' ')[0]
 
   return (
     <main className="flex flex-1 flex-col gap-5 px-4 pt-4">
       <header className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col">
-          <span className="text-sm text-text-secondary">{greeting(new Date().getHours())},</span>
-          <h1 className="truncate text-2xl font-bold text-text-primary">{firstName}</h1>
+          <h1 className="truncate text-2xl font-bold text-text-primary">ChessMate</h1>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -152,7 +156,13 @@ export default function Home() {
 
       <div className="flex flex-col gap-3">
         <ShortcutCard to="/puzzles" icon={Puzzle} title="Puzzles" text="Pick a puzzle" cta="Open" />
-        <ShortcutCard to="/learn" icon={BookOpen} title="Learn" text="Start learning" cta="Open" />
+        <ShortcutCard
+          to={continueLesson ? `/lesson/${continueLesson.id}` : '/learn'}
+          icon={BookOpen}
+          title="Learn"
+          text={continueLesson ? `Continue: ${continueLesson.title}` : 'Start learning'}
+          cta={continueLesson ? 'Continue' : 'Open'}
+        />
         {latestGameId ? (
           <ShortcutCard
             to={`/review/${latestGameId}`}
@@ -182,7 +192,7 @@ export default function Home() {
               <span className="text-text-secondary">
                 {stats.record.wins} wins, {stats.record.losses} losses, {stats.record.draws} draws
               </span>
-              <span className="text-text-secondary">Puzzles solved: 0</span>
+              <span className="text-text-secondary">Puzzles solved: {puzzlesSolved}</span>
             </div>
           </div>
         ) : (

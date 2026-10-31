@@ -1,0 +1,12 @@
+{
+  "id": "tactics-discovered",
+  "title": "Discovered attacks",
+  "track": "tactics",
+  "order": 4,
+  "practice": { "label": "Practice these puzzles", "theme": "discoveredAttack" },
+  "steps": [
+    { "type": "text", "title": "What is a discovered attack?", "body": "A discovered attack happens when moving one piece uncovers an attack by another piece behind it." },
+    { "type": "demo", "title": "The uncovered rook", "fen": "4k3/8/8/8/4N3/8/8/4R1K1 w - - 0 1", "moves": ["e4f6"], "body": "The knight on e4 blocks the rook on e1 from the king on e8. When the knight moves, the rook gives check." },
+    { "type": "try-it", "title": "Your move", "body": "Move the knight anywhere to uncover the rook's check.", "fen": "4k3/8/8/8/4N3/8/8/4R1K1 w - - 0 1", "answers": ["e4c3", "e4c5", "e4d2", "e4d6", "e4f2", "e4f6", "e4g3", "e4g5"], "hint": "Any knight move from e4 uncovers the rook. Choose one that also attacks something.", "success": "Check! A knight move that also gives check is very strong." }
+  ]
+}

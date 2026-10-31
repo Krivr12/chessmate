@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { Color } from 'chess.js'
-import { OpponentAvatar } from '@/components/opponent/opponent-avatar'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -13,12 +12,11 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { DIFFICULTIES, DIFFICULTY_ORDER, isDifficulty } from '@/logic/difficulty'
 import { OPPONENTS, opponentForTheme, type OpponentId } from '@/logic/opponents'
-import type { Difficulty, Mood } from '@/logic/types'
+import type { Difficulty } from '@/logic/types'
 import { useSettingsStore, type DefaultColor } from '@/store/settings-store'
 import { resolveTheme } from '@/store/theme'
 import { BOTTOM_SHEET_CLASS } from './hint-sheet'
 
-const LEVEL_MOOD: Record<Difficulty, Mood> = { easy: 'idle', medium: 'happy', hard: 'think' }
 const ITEM_CLASS =
   'h-auto flex-1 flex-col gap-1 rounded-xl border border-border bg-card py-2 data-[state=on]:border-primary data-[state=on]:bg-primary/15 data-[state=on]:text-primary'
 
@@ -79,9 +77,8 @@ function NewGameForm({
         >
           {DIFFICULTY_ORDER.map((d) => (
             <ToggleGroupItem key={d} value={d} className={ITEM_CLASS}>
-              <OpponentAvatar opponent={opponentId} mood={LEVEL_MOOD[d]} className="size-9" />
               <span className="text-sm font-semibold">{DIFFICULTIES[d].label}</span>
-              <span className="text-[11px] text-text-secondary">{OPPONENTS[opponentId].difficultyNames[d]}</span>
+              <span className="text-[11px] text-text-secondary">{DIFFICULTIES[d].strength}%</span>
             </ToggleGroupItem>
           ))}
         </ToggleGroup>

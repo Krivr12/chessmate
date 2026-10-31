@@ -22,6 +22,9 @@ export const trashTalk = {
   draw: ['A draw? I was just warming up.', "Fine. We'll call it even."],
   gameStart: ['Amaze me! If you can.'],
   resume: ["You're back. Let's finish this."],
+  puzzleCorrect: ['Nice move, keep going.', 'Hmph. Keep it up.'],
+  puzzleWrong: ['Ribbit... that is not it.', 'Oops. Look again.'],
+  puzzleSolved: ['Fine. You solved it.', 'Ribbit! Next one?'],
 } satisfies Record<string, string[]> & Record<Grade, string[]>
 
 export type TalkCategory = keyof typeof trashTalk
@@ -29,24 +32,27 @@ export type TalkCategory = keyof typeof trashTalk
 /** A word bank: one line list per category. Every opponent has its own. */
 export type TrashTalkBank = Record<TalkCategory, string[]>
 
-/** Chicken word bank (plan section 7). Its own voice: playful, never mean, and no frog lines. */
-export const chickenTalk: TrashTalkBank = {
-  best: ['Bawk... lucky scratch.', "Hmph. Beginner's luck."],
-  great: ['Not bad for a hatchling.', "Don't get cocky, chick."],
-  good: ['Fine. Acceptable, I suppose.', 'Keep pecking.'],
-  inaccuracy: ['Cluck... are you sure about that?', 'Wobbly, wobbly.'],
-  mistake: ['That was egg-sactly the wrong move.', 'Oops. On purpose?'],
-  blunder: ['Bawk! Did you mean to do that?', "I've seen eggs play better."],
-  opponentCaptures: ['Cluck cluck, mine now!', 'Snack time!'],
-  playerCaptures: ['Ouch. My feathers.', 'Hey! Hands off my pieces!'],
-  playerChecks: ['Eep! Hold on.', 'Bawk! Check?'],
-  opponentChecks: ['Cluck! Check!', 'Watch that king, chick.'],
-  hintUsed: ['Psst, want a clue? Cute.', 'Peek away, I see you.'],
-  playerWins: ['You got me. Bawk...', 'Fair pecks. Rematch?'],
-  playerLoses: ['Better luck next time.', 'Cluck cluck!'],
-  draw: ["Even? Fine. Next time I'll peck harder.", 'A draw. Bawk.'],
-  gameStart: ["Let's see what you've got, chick."],
+/** Cat word bank. Its own voice: playful, never mean, and no frog lines. */
+export const catTalk: TrashTalkBank = {
+  best: ['Mrow. Lucky paw.', "Hmph. Beginner's luck."],
+  great: ['Not bad for a kitten.', "Don't get too pleased with yourself."],
+  good: ['Fine. Acceptable, I suppose.', 'Keep batting at it.'],
+  inaccuracy: ['Mrrp... are you sure about that?', 'Wobbly paws there.'],
+  mistake: ['That was a hairball of a move.', 'Oops. On purpose?'],
+  blunder: ['Mrrow! Did you mean to do that?', "I've seen kittens play better."],
+  opponentCaptures: ['Mine now, purr!', 'Snack time!'],
+  playerCaptures: ['Hey! Hands off my pieces!', 'Hiss! That was mine.'],
+  playerChecks: ['Eep! Hold on.', 'Mrrow! Check?'],
+  opponentChecks: ['Mrrow! Check!', 'Watch that king, friend.'],
+  hintUsed: ['Psst, want a clue? Cute.', 'Peeking again? I see you.'],
+  playerWins: ['You got me. Purr...', 'Fair play. Rematch?'],
+  playerLoses: ['Better luck next time.', 'Purr purr!'],
+  draw: ["Even? Fine. Next time I'll pounce harder.", 'A draw. Mrrp.'],
+  gameStart: ["Let's see what you've got, friend."],
   resume: ['Back for more? Let us finish this.'],
+  puzzleCorrect: ['Purr! Keep going.', 'Ooh, nice one.'],
+  puzzleWrong: ['Mrrp... not that one.', 'Oops, wrong branch!'],
+  puzzleSolved: ['Purr! You solved it!', 'Purr-fect. Next?'],
 }
 
 const lastLine = new WeakMap<TrashTalkBank, Map<TalkCategory, string>>()

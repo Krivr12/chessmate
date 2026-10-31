@@ -1,13 +1,10 @@
 import { useEffect } from 'react'
-import { ArrowRight } from 'lucide-react'
+import { UserRound } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router'
-import { KnightLogo } from '@/components/chess/knight-logo'
 import { Button } from '@/components/ui/button'
-import { APP_NAME, APP_TAGLINE } from '@/constants'
 import { preloadEngine } from '@/engine/engine-service'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import { META_KEYS, setMeta } from '@/storage/meta'
 
 /** Faint geometric shapes behind the content. Purely decorative. */
 function BackgroundShapes() {
@@ -47,8 +44,7 @@ function BackgroundShapes() {
 }
 
 /**
- * First-launch welcome (D3). Shown only until the user taps Start.
- * Start records that the welcome was seen and opens Home. Resume lives on Home.
+ * Start page. It is the first screen on every app open. "Enter game" opens Home.
  */
 export default function Landing() {
   const navigate = useNavigate()
@@ -58,20 +54,11 @@ export default function Landing() {
     preloadEngine()
   }, [])
 
-  const start = async () => {
-    try {
-      await setMeta(META_KEYS.hasSeenWelcome, true)
-    } catch {
-      // If the flag cannot be saved, the welcome shows again next launch. That is acceptable.
-    }
-    navigate('/home', { replace: true })
-  }
-
   return (
     <main className="relative flex flex-1 flex-col overflow-hidden px-6 pt-10 pb-8">
       <BackgroundShapes />
 
-      <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-6 text-center">
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
         <motion.div
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.75, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -81,28 +68,10 @@ export default function Landing() {
               : { type: 'spring', stiffness: 260, damping: 18 }
           }
         >
-          <motion.div
-            animate={reduceMotion ? undefined : { y: [0, -6, 0] }}
-            transition={
-              reduceMotion
-                ? undefined
-                : { duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }
-            }
-          >
-            <KnightLogo className="size-20 text-primary" />
-          </motion.div>
-        </motion.div>
-
-        <motion.div
-          className="flex flex-col gap-2"
-          initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.15, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <h1 className="text-[2rem] font-extrabold tracking-tight text-text-primary">
-            {APP_NAME}
-          </h1>
-          <p className="text-sm text-text-secondary">{APP_TAGLINE}</p>
+          {/* Placeholder until the final character art is added. */}
+          <span className="flex size-28 items-center justify-center rounded-full border border-border bg-card text-primary">
+            <UserRound className="size-14" strokeWidth={1.6} aria-hidden="true" />
+          </span>
         </motion.div>
       </div>
 
@@ -112,9 +81,8 @@ export default function Landing() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
       >
-        <Button size="lg" className="w-full" onClick={() => void start()}>
-          Start
-          <ArrowRight data-icon="inline-end" strokeWidth={1.8} aria-hidden="true" />
+        <Button size="lg" className="w-full" onClick={() => navigate('/home', { replace: true })}>
+          Enter game
         </Button>
       </motion.div>
     </main>

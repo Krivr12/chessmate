@@ -10,6 +10,7 @@
     "format": "prettier --write .",
     "test": "vitest --run --passWithNoTests",
     "icons": "node scripts/generate-icons.mjs",
+    "puzzles:build": "node --no-warnings --experimental-strip-types scripts/build-puzzles.ts",
     "preview": "vite preview"
   },
   "dependencies": {

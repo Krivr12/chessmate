@@ -1,0 +1,11 @@
+{
+  "id": "openings-e4",
+  "title": "The e4 opening",
+  "track": "openings",
+  "order": 2,
+  "steps": [
+    { "type": "text", "title": "1. e4", "body": "1. e4 is the most common first move. It takes the centre and opens lines for your queen and bishop." },
+    { "type": "demo", "title": "An Italian-style setup", "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "moves": ["e2e4", "e7e5", "g1f3", "b8c6", "f1c4"], "body": "Knight to f3, knight to c6, and bishop to c4 aims at the weak f7 square. Both sides develop quickly." },
+    { "type": "try-it", "title": "Your move", "body": "Black played 1... e5. Develop your knight: move g1 to f3.", "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2", "answers": ["g1f3"], "hint": "Knights come out before bishops, and f3 is a good square for them.", "success": "Good. The knight now attacks the e5 pawn." }
+  ]
+}

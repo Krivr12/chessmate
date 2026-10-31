@@ -1,0 +1,12 @@
+{
+  "id": "endgames-rook",
+  "title": "King and rook vs king",
+  "track": "endgames",
+  "order": 2,
+  "steps": [
+    { "type": "text", "title": "The idea", "body": "A rook and king can also force checkmate. A key idea is to cut the enemy king off with the rook, so it cannot cross to your side." },
+    { "type": "demo", "title": "Cutting off the king", "fen": "8/8/8/8/3k4/8/8/R3K3 w - - 0 1", "moves": ["a1a5"], "body": "Ra5 cuts the black king off from the fifth rank. The king can no longer cross to your side of the board." },
+    { "type": "try-it", "title": "Your turn", "body": "Cut the king off on the fifth rank. Play the rook to a5.", "fen": "8/8/8/8/3k4/8/8/R3K3 w - - 0 1", "answers": ["a1a5"], "hint": "The rook goes to the fifth rank, one row above the king.", "success": "Yes. The enemy king is cut off on one side." },
+    { "type": "quiz", "question": "What is a key idea when using a rook in an endgame?", "options": ["Cut off the enemy king", "Sacrifice the rook", "Keep the rook at home"], "answer": 0, "explanation": "A rook that cuts off the king's path makes the rest of the mate much easier." }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "tactics-skewer",
+  "title": "Skewers",
+  "track": "tactics",
+  "order": 3,
+  "practice": { "label": "Practice these puzzles", "theme": "skewer" },
+  "steps": [
+    { "type": "text", "title": "What is a skewer?", "body": "A skewer attacks a valuable piece so it has to move. Then you capture the piece behind it. It works like a pin in reverse." },
+    { "type": "demo", "title": "The skewer", "fen": "r7/8/8/k7/4K3/8/8/7R w - - 0 1", "moves": ["h1a1", "a5b5", "a1a8"], "body": "The rook checks along the a-file. The king steps aside, and the rook slides up the file to take the rook on a8." },
+    { "type": "try-it", "title": "Start the skewer", "body": "Give check with the rook to start the skewer.", "fen": "r7/8/8/k7/4K3/8/8/7R w - - 0 1", "answers": ["h1a1"], "hint": "Move the rook onto the a-file, the same file as the king.", "success": "Check! Now the king has to move out of the way." },
+    { "type": "quiz", "question": "What happens to the piece behind in a skewer?", "options": ["It is safe", "It can be captured", "It becomes stronger"], "answer": 1, "explanation": "Once the front piece moves, the piece behind is exposed to attack." }
+  ]
+}

@@ -1,0 +1,6 @@
+[
+  { "id": "basics", "title": "Basics", "blurb": "Pieces, special moves, check, and notation." },
+  { "id": "tactics", "title": "Tactics", "blurb": "Forks, pins, skewers, and other ideas that win material." },
+  { "id": "openings", "title": "Openings", "blurb": "How to start a game well." },
+  { "id": "endgames", "title": "Endgames", "blurb": "Finish the game with a few pieces left." }
+]

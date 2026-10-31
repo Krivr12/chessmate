@@ -1,0 +1,12 @@
+{
+  "id": "basics-notation",
+  "title": "Reading chess notation",
+  "track": "basics",
+  "order": 5,
+  "steps": [
+    { "type": "text", "title": "Names", "body": "Each square has a name: a letter for the file (a to h) and a number for the rank (1 to 8). Pieces use letters: K king, Q queen, R rook, B bishop, N knight. Pawns have no letter." },
+    { "type": "demo", "title": "Reading moves", "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "moves": ["e2e4", "e7e5", "g1f3"], "body": "1. e4 e5 2. Nf3 means: pawn to e4, pawn to e5, then knight to f3." },
+    { "type": "quiz", "question": "What does Nf3 mean?", "options": ["Knight to f3", "Night to f3", "Pawn to f3"], "answer": 0, "explanation": "N stands for knight. Pawns have no letter, so e4 means a pawn to e4." },
+    { "type": "try-it", "title": "Your turn", "body": "Play the pawn from d2 to d4. In notation, that is d4.", "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "answers": ["d2d4"], "hint": "The pawn on d2 can move two squares on its first move.", "success": "Yes. Pawn to d4." }
+  ]
+}

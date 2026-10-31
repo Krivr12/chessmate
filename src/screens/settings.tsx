@@ -85,7 +85,7 @@ export default function Settings() {
           <div className="flex flex-col">
             <span className="text-sm font-medium text-text-primary">Theme</span>
             <span className="text-xs text-text-secondary">
-              The theme picks your opponent: dark is the frog, light is the chicken.
+              The theme picks your opponent: dark is the frog, light is the cat.
             </span>
           </div>
           <ToggleGroup

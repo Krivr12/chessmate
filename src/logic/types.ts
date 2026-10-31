@@ -6,7 +6,7 @@ export type { Difficulty }
 
 export type Grade = 'best' | 'great' | 'good' | 'inaccuracy' | 'mistake' | 'blunder'
 
-export type Mood = 'idle' | 'think' | 'happy' | 'sad' | 'shock'
+export type Mood = 'idle' | 'think' | 'happy' | 'sad' | 'shock' | 'angry'
 
 export type MoveRecord = {
   from: Square

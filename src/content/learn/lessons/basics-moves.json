@@ -1,0 +1,13 @@
+{
+  "id": "basics-moves",
+  "title": "How each piece moves",
+  "track": "basics",
+  "order": 2,
+  "steps": [
+    { "type": "text", "title": "Piece moves", "body": "Each piece moves in its own way. Let's look at the knight, bishop, rook, and queen." },
+    { "type": "demo", "title": "Knight", "fen": "4k3/8/8/8/3N4/8/8/4K3 w - - 0 1", "moves": ["d4f5"], "body": "The knight jumps in an L shape: two squares in one direction, then one square sideways. It can jump over other pieces." },
+    { "type": "demo", "title": "Bishop", "fen": "4k3/8/8/8/8/8/8/2B1K3 w - - 0 1", "moves": ["c1h6"], "body": "The bishop moves diagonally, any distance. Each bishop stays on the same colour of square all game." },
+    { "type": "try-it", "title": "Rook", "body": "Rooks move in straight lines along files and ranks. Slide the rook from a1 to a8.", "fen": "4k3/8/8/8/8/8/8/R3K3 w - - 0 1", "answers": ["a1a8"], "hint": "Rooks move along a file (a to h) or a rank (1 to 8).", "success": "Right. Rooks are strong on open files." },
+    { "type": "quiz", "question": "Which piece moves in straight lines and diagonals?", "options": ["Knight", "Queen", "Pawn"], "answer": 1, "explanation": "The queen combines the rook and the bishop." }
+  ]
+}

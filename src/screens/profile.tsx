@@ -7,7 +7,6 @@ import {
   Puzzle,
   Settings2,
   ShieldCheck,
-  Sprout,
   Swords,
   Target,
   Trash2,
@@ -30,7 +29,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { dateKey } from '@/logic/activity'
-import { BADGES, earnedBadges, type BadgeId } from '@/logic/badges'
+import { BADGES, earnedBadges, type BadgeId, type ExtraProgress } from '@/logic/badges'
 import type { GameRecord } from '@/logic/game-record'
 import { opponentForTheme } from '@/logic/opponents'
 import { computeStats, type ProfileStats } from '@/logic/stats'
@@ -40,6 +39,7 @@ import { useSettingsStore } from '@/store/settings-store'
 import { getActivityDays } from '@/storage/activity'
 import { deleteGame, listGames } from '@/storage/games'
 import { getDisplayName, getSeenBadges, MAX_NAME_LENGTH, setDisplayName, setSeenBadges } from '@/storage/profile'
+import { getExtraProgress } from '@/storage/progress'
 
 type Filter = 'all' | 'wins' | 'losses' | 'draws'
 const FILTERS: { value: Filter; label: string }[] = [
@@ -124,6 +124,7 @@ export default function Profile() {
   const [toDelete, setToDelete] = useState<GameRecord | null>(null)
   const [loaded, setLoaded] = useState(false)
   const [today, setToday] = useState('')
+  const [extra, setExtra] = useState<ExtraProgress>({ puzzlesSolved: 0, learnTracksDone: 0 })
   const nameInput = useRef<HTMLInputElement>(null)
 
   const reload = () =>
@@ -134,16 +135,17 @@ export default function Profile() {
 
   useEffect(() => {
     let cancelled = false
-    Promise.all([getDisplayName(), listGames(), getActivityDays(), getSeenBadges()]).then(
-      async ([n, g, d, seen]) => {
+    Promise.all([getDisplayName(), listGames(), getActivityDays(), getSeenBadges(), getExtraProgress()]).then(
+      async ([n, g, d, seen, x]) => {
         if (cancelled) return
         setName(n)
         setGames(g)
         setDays(d)
+        setExtra(x)
         setToday(dateKey(Date.now()))
         setLoaded(true)
         // Tell the player about badges they just earned, once each.
-        const now = earnedBadges(g, d, { puzzlesSolved: 0, learnTracksDone: 0 })
+        const now = earnedBadges(g, d, x)
         const fresh = [...now].filter((id) => !seen.includes(id))
         if (fresh.length > 0) {
           for (const id of fresh) {
@@ -160,7 +162,7 @@ export default function Profile() {
   }, [])
 
   const stats: ProfileStats = computeStats(games, days, today)
-  const earned = earnedBadges(games, days, { puzzlesSolved: 0, learnTracksDone: 0 }) as Set<BadgeId>
+  const earned = earnedBadges(games, days, extra) as Set<BadgeId>
   const shown = games.filter((g) => {
     if (filter === 'wins') return g.result === 'win'
     if (filter === 'losses') return g.result === 'loss'
@@ -245,7 +247,7 @@ export default function Profile() {
           </div>
           <div>
             <span className="block text-xs text-text-secondary">Puzzles solved</span>
-            <span className="font-bold text-text-primary">0</span>
+            <span className="font-bold text-text-primary">{extra.puzzlesSolved}</span>
           </div>
         </div>
       </section>

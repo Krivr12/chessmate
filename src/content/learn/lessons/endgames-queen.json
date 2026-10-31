@@ -1,0 +1,11 @@
+{
+  "id": "endgames-queen",
+  "title": "King and queen vs king",
+  "track": "endgames",
+  "order": 1,
+  "steps": [
+    { "type": "text", "title": "The idea", "body": "A queen and king can checkmate a lone king. The queen restricts the enemy king, and your king walks over to help." },
+    { "type": "try-it", "title": "Restrict the king", "body": "Black's king is in the middle. Move the queen to d7 to keep it boxed in.", "fen": "8/8/8/4k3/8/8/8/3QK3 w - - 0 1", "answers": ["d1d7"], "hint": "Slide the queen up the d-file. Make sure the black king cannot capture it.", "success": "Good. The queen controls many squares and keeps the king in a box." },
+    { "type": "quiz", "question": "What should your king do?", "options": ["Stay on the back rank", "Come closer to help the queen", "Run away from the queen"], "answer": 1, "explanation": "Your king is needed to finish the job. Bring it closer while the queen restricts the enemy king." }
+  ]
+}

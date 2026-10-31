@@ -1,0 +1,13 @@
+{
+  "id": "basics-special",
+  "title": "Special moves",
+  "track": "basics",
+  "order": 3,
+  "steps": [
+    { "type": "text", "title": "Three special moves", "body": "Castling, en passant, and promotion each follow their own rule." },
+    { "type": "demo", "title": "Castling", "fen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", "moves": ["e1g1"], "body": "The king moves two squares toward a rook, and the rook jumps over it. Neither piece may have moved before, the king cannot pass through an attacked square, and it cannot castle out of check." },
+    { "type": "demo", "title": "En passant", "fen": "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1", "moves": ["e5d6"], "body": "When a pawn jumps two squares past an enemy pawn that could have captured it, the enemy may capture it en passant on the very next move." },
+    { "type": "try-it", "title": "Promotion", "body": "Push the pawn on a7 to the last rank and promote it.", "fen": "4k3/P7/8/8/8/8/8/4K3 w - - 0 1", "answers": ["a7a8q", "a7a8r", "a7a8b", "a7a8n"], "hint": "A pawn that reaches the last rank becomes any piece except a king or pawn. A queen is the usual choice.", "success": "Promotion done. A queen is usually the best choice, but any of the four is legal." },
+    { "type": "quiz", "question": "Can a king castle after it has moved?", "options": ["Yes, once per game", "No, never"], "answer": 1, "explanation": "Once the king moves, castling is no longer allowed." }
+  ]
+}

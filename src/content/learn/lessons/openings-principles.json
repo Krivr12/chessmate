@@ -1,0 +1,11 @@
+{
+  "id": "openings-principles",
+  "title": "Opening principles",
+  "track": "openings",
+  "order": 1,
+  "steps": [
+    { "type": "text", "title": "Three ideas", "body": "The opening is the first few moves. Three simple principles help: control the centre, develop your knights and bishops, and castle to keep your king safe." },
+    { "type": "demo", "title": "Good development", "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "moves": ["e2e4", "e7e5", "g1f3", "b8c6"], "body": "Both sides take the centre and bring out their knights. Each piece now has a useful square." },
+    { "type": "quiz", "question": "Which one is a good opening principle?", "options": ["Move the queen out early", "Control the centre and develop pieces", "Move the same piece twice"], "answer": 1, "explanation": "An early queen move lets the opponent gain time by attacking it with a developing move." }
+  ]
+}

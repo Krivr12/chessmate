@@ -12,7 +12,7 @@ Goal: take the MVP (Landing, New game sheet, Game page, hint, win %, grading, re
 |---|---|---|
 | 1 | Promotion picker | Chess basics gap |
 | 2 | Captured pieces panel (piece type and count) | Fills the empty space under the game cards |
-| 3 | Light mode, with a **theme-linked opponent** (dark = frog, light = chicken). The theme is locked while a battle is in progress | Mockup Settings, your direction |
+| 3 | Light mode, with a **theme-linked opponent** (dark = frog, light = cat). The theme is locked while a battle is in progress | Mockup Settings, your direction |
 | 4 | Settings page (including sound and haptics) | Mockup |
 | 5 | Clear memory / data controls | Earlier request |
 | 6 | Help & Support | Mockup drawer item |
@@ -33,14 +33,14 @@ These decisions shape the plan. Each can be changed, but changing later costs mo
 
 | # | Decision | Why |
 |---|---|---|
-| D1 | **Theme decides the opponent.** Dark = frog, Light = chicken. System theme follows the device. | Your direction. Needs an `opponent` abstraction (section 4.4). |
+| D1 | **Theme decides the opponent.** Dark = frog, Light = cat. System theme follows the device. | Your direction. Needs an `opponent` abstraction (section 4.4). |
 | D2 | **The theme is locked while a battle is in progress.** The theme can only be changed in Settings, and that control is disabled while an unfinished battle exists (running or saved). The Game page has no theme control. If the device flips between dark and light (System theme) during a battle, the app keeps the battle's theme until the battle ends. | The animal always matches the theme, so there is no mixed state to design for. |
-| D3 | **Landing is shown on first launch only.** Start goes to Home. After that the app opens on Home. A saved battle appears as a "Resume battle" card on Home. | The Home dashboard replaces Landing as the daily entry point. |
+| D3 | **Landing is shown on every app open.** `/` always shows Landing, and its Enter game button goes to Home. A saved battle appears as a "Resume battle" card on Home. | The start page is the first screen every time, and Home is one tap away. |
 | D4 | **No sidebar.** Navigation is the bottom bar (Home, Puzzles, Learn, Profile). Settings is a gear on Home and Profile. Help & Support lives inside Settings. | Matches your scope. |
 | D5 | **A puzzle is lost on the first wrong move** (like the mockup's win and loss screens). Retry is unlimited, but only a clean solve counts as "solved on first try". | Simple and matches the mockup. |
 | D6 | **"Day streak" = consecutive days with at least one finished game, puzzle, or lesson.** Uses the device's local date. | Daily Challenge is gone, so streak needs a new definition. |
 | D7 | **Profile has an editable local display name** (default "Player"). | The mockup shows a name, but there are no accounts. |
-| D8 | **Chicken difficulty names:** Chick (Easy), Hen (Medium), Rooster (Hard). Frog keeps Sleepy, Regular, Big brain. | Cute, and each animal gets its own voice. |
+| D8 | **Difficulty shows the engine strength as a percent:** Easy 10%, Medium 50%, Hard 100%. No animal names. | Clear about how strong each level is. |
 | D9 | **Backup and restore (export or import a JSON file)** is a recommended extra in the data milestone. | iOS can evict local storage. |
 | D10 | **Level and XP** from the mockup are optional (stretch). | Not in your list. |
 
@@ -59,7 +59,7 @@ If anything here is not true in your build, fix it first (especially the engine'
 ### 4.1 Routes and layout
 
 ```
-/                    Landing (first launch only)
+/                    Landing (every app open)
 /home                Home dashboard            [tab]
 /puzzles             Puzzle list               [tab]
 /learn               Learn tracks              [tab]
@@ -101,7 +101,7 @@ Rules:
 
 ```ts
 type Grade = 'best'|'great'|'good'|'inaccuracy'|'mistake'|'blunder';
-type OpponentId = 'frog' | 'chicken';
+type OpponentId = 'frog' | 'cat';
 
 type Ply = {
   uci: string; san: string; by: 'player' | 'opponent';
@@ -143,12 +143,11 @@ The saved battle record (`battle:current`) gains two fields: `opponent: Opponent
 ```ts
 type Opponent = {
   id: OpponentId; name: string;
-  difficultyNames: Record<'easy'|'medium'|'hard', string>;
   Avatar: React.FC<{ mood: Mood; size?: number }>;
   lines: TrashTalkBank;
 };
 const opponentForTheme = (resolved: 'dark'|'light'): OpponentId =>
-  resolved === 'dark' ? 'frog' : 'chicken';
+  resolved === 'dark' ? 'frog' : 'cat';
 ```
 
 Every place that mentions the frog (header title, commentary avatar, New game sheet faces, result screens, empty states, trash talk) reads from the active game's opponent instead of hardcoding the frog.
@@ -183,7 +182,7 @@ src/
   components/
     nav/bottom-nav.tsx, tab-layout.tsx
     chess/promotion-picker.tsx, captured-panel.tsx, board-arrows.tsx, mini-board.tsx, eval-graph.tsx
-    opponent/frog.tsx, chicken.tsx, opponents.ts
+    opponent/opponent-avatar.tsx (frog and cat sprites), opponents.ts
     profile/stat-ring.tsx, performance-bars.tsx, badge-grid.tsx, history-list.tsx
   content/learn/*.json
   data/puzzles/*.json            (generated)
@@ -214,7 +213,7 @@ Goal: the plumbing everything else depends on.
 - [ ] Extend the board with `readOnly`, `orientation`, `highlights`, `arrows`, `onMoveAttempt`, plus `MiniBoard`
 - [ ] Convert routes to the section 4.1 structure and lazy-load route chunks. The tab routes can show a placeholder until built
 - [ ] Add Playwright smoke tests (open app, play a move, reload and resume)
-- [ ] Add the `hasSeenWelcome` flag and the first-launch Landing redirect rule (D3)
+- [x] Landing shows on every app open, with no first-launch flag (D3, revised)
 
 Done when: the app behaves exactly as before, new routes exist as placeholders, and the migration runner has a passing test.
 
@@ -242,7 +241,7 @@ Goal: use the empty space under the Hint and Win chance cards.
 
 Design:
 - A card titled "Captured" with two rows: **You** and **the opponent's name**
-- Each row shows five piece icons (pawn, knight, bishop, rook, queen) with a count badge, for example pawn ×3. The pieces shown are the ones that player captured, drawn in the captured side's color
+- Each row shows five piece icons (pawn, knight, bishop, rook, queen) with the count next to it, for example pawn ×3. No box surrounds each piece, and the icons and counts are large. The pieces shown are the ones that player captured, drawn in the captured side's color
 - Types with zero captures are dimmed (not hidden), so the layout never jumps
 - A small material advantage chip (for example "+3") on the side that is ahead
 - Count changes animate with a short pop
@@ -259,7 +258,7 @@ Done when: counts are always correct after undo, redo, reset, and resume.
 
 ---
 
-### M21. Theme system, light mode, and the chicken (M)
+### M21. Theme system, light mode, and the cat (M)
 
 Goal: a full light theme and the theme-linked opponent.
 
@@ -283,9 +282,9 @@ Tasks:
 - [ ] Re-check every grade color and icon (mint, blue, yellow, coral) on light surfaces
 - [ ] Prevent theme flash: an inline script in `index.html` reads the saved theme and sets the class before React loads. Follow the system setting for `system` and listen for changes
 - [ ] Update `<meta name="theme-color">` when the theme changes. (The manifest color stays the dark value, which is fine.)
-- [ ] Build `chicken.tsx` with the same five moods as the frog (idle, think, happy, sad, shock). Suggested look: white and warm yellow body, orange beak and comb, navy eyes
-- [ ] Add the chicken's trash talk bank (section 7)
-- [ ] Apply D1: `opponentForTheme`, with the opponent saved on the game when it starts. The New game sheet shows the active theme's animal and its difficulty names (D8)
+- [x] Cat art: sprites cut from the emote sheet into `public/opponents/cat-*.webp` (happy, sad, shock, angry, idle, think) by `scripts/extract-opponent-sprites.mjs`. The frog uses the matching `frog-*.webp` files
+- [x] Add the cat's trash talk bank (`catTalk` in `src/logic/trash-talk.ts`, see section 7)
+- [ ] Apply D1: `opponentForTheme`, with the opponent saved on the game when it starts. The New game sheet shows each level's engine strength percent (D8)
 - [ ] Apply D2 (theme lock): compute the effective theme as in section 4.4, so the whole app uses the battle's theme while a battle exists
 - [ ] Handle a device theme change during a battle (System theme): keep it pending and apply it when the battle ends
 - [ ] Apply a pending theme only **after the result screen is closed** (not while the win or lose animation plays), with a short crossfade
@@ -361,7 +360,7 @@ Goal: a local, offline help page. There is no server, so "support" means self-he
 
 Sections:
 - [ ] **Quick start:** three short cards (how to move, how to use hints, how to read win chance and grades)
-- [ ] **FAQ (accordion):** ten or so questions. Suggested topics: what win chance means, how grading works, why the frog or chicken sometimes plays badly (difficulty), what happens offline, how to install the app (Android and iPhone steps), where data is stored, how to move a game to another device (if backup exists), why haptics may not work on iPhone, what "hint" does
+- [ ] **FAQ (accordion):** ten or so questions. Suggested topics: what win chance means, how grading works, why the frog or cat sometimes plays badly (difficulty), what happens offline, how to install the app (Android and iPhone steps), where data is stored, how to move a game to another device (if backup exists), why haptics may not work on iPhone, what "hint" does
 - [ ] **Troubleshooting:** engine will not load (reload, check storage, clear cache), game not resuming, app not updating
 - [ ] **About and credits:** app version, Stockfish, chess.js, the piece set, puzzle data source, and libraries, each with its license (check each license text and include what it requires)
 - [ ] **Report a problem:** a link to your issue tracker or an email address (set it in one config constant). Include a **Copy diagnostics** button that copies app version, browser, engine status, and storage estimate (no personal data)
@@ -422,7 +421,7 @@ Goal: tab navigation and the Home screen from the mockup.
 Bottom navigation: Home, Puzzles, Learn, Profile, using the spec's navigation styling. Keep it visible only on tab routes. Active tab uses the blue accent plus a label (never color alone). It respects the iOS safe area. Android back from a tab root should behave sensibly.
 
 Home layout:
-- [ ] Header: greeting by time of day with the display name, day streak (flame), and a Settings gear
+- [x] Header: the "ChessMate" title only (no greeting or display name), day streak (flame), and a Settings gear
 - [ ] **Hero card:** "Resume battle" (if a save exists) with a secondary "New game", otherwise "Play vs {animal}" opening the New game sheet
 - [ ] **Puzzles card:** next puzzle, or "Pick a puzzle"
 - [ ] **Learn card:** "Continue" the last lesson, or "Start learning"
@@ -553,7 +552,7 @@ Done when: all v1 lessons run end to end offline, the validation test passes, an
 - [ ] Cross-links: Learn tactics link to puzzle themes, review links to "Play from here", Help links to Settings
 - [ ] Empty states, loading states (skeletons), and error states for every new screen
 - [ ] Page transitions (short, with a reduced-motion alternative)
-- [ ] Opponent personality pass: voice and mood use across new screens, chicken bank at least as rich as the frog's
+- [ ] Opponent personality pass: voice and mood use across new screens, cat bank at least as rich as the frog's
 - [ ] Audit icon-and-label pairing everywhere (no color-only meaning)
 - [ ] Copy review across the app (sentence case, consistent tone)
 
@@ -561,7 +560,7 @@ Done when: all v1 lessons run end to end offline, the validation test passes, an
 
 ### M32. QA, performance, and release (M)
 
-- [ ] Test matrix: dark and light, frog and chicken, Play as White and Black, 360, 390, and 430 px widths, Android Chrome, iOS Safari (installed and in browser), desktop
+- [ ] Test matrix: dark and light, frog and cat, Play as White and Black, 360, 390, and 430 px widths, Android Chrome, iOS Safari (installed and in browser), desktop
 - [ ] Theme lock cases: start a battle and flip the device theme (System mode) and confirm nothing changes; leave mid-game and confirm the Settings theme row is disabled; finish or clear the battle and confirm the pending theme applies after the result screen closes; update from the MVP with a saved battle on a light-mode device and confirm it resumes as dark with the frog
 - [ ] Offline: load once online, then airplane mode and exercise every tab, a full game, a puzzle, a lesson, a review, and settings changes
 - [ ] Performance: entry chunk size, route chunk sizes, animation at 60 fps, no long main-thread tasks during engine work, memory use on a mid-range phone
@@ -580,7 +579,7 @@ Done when: all v1 lessons run end to end offline, the validation test passes, an
 M18 Foundations
  ├─ M19 Promotion picker ─────────────┐
  ├─ M20 Captured panel                │
- ├─ M21 Theme, light mode, chicken    │
+ ├─ M21 Theme, light mode, cat    │
  │    └─ M22 Settings                 │
  │         ├─ M23 Clear data          │
  │         └─ M24 Help & Support      │
@@ -606,37 +605,16 @@ Rough effort: about 4 S/M items in Phase A and B, then four heavier items (M26, 
 
 ---
 
-## 7. Opponent voice: chicken starter lines
+## 7. Opponent voice: cat lines
 
-Same categories as the frog bank. Starter lines, to be expanded:
-
-```ts
-chickenLines = {
-  gameStart:   ["Let's see what you've got, chick."],
-  best:        ["Bawk... lucky scratch.", "Hmph. Beginner's luck."],
-  great:       ["Not bad for a hatchling.", "Don't get cocky."],
-  good:        ["Fine. Acceptable.", "Keep pecking."],
-  inaccuracy:  ["Hmm, are you sure about that?", "A little wobbly there."],
-  mistake:     ["That was egg-sactly the wrong move.", "Oops. On purpose?"],
-  blunder:     ["Bawk! Did you mean to do that?", "I've seen eggs play better."],
-  opponentCaptures: ["Cluck cluck, mine now!", "Gotcha!"],
-  playerCaptures:   ["Hey! That was mine.", "Ouch. My feathers."],
-  playerChecks:     ["Eep! Hold on.", "Bawk! Check?"],
-  hintUsed:         ["Peeking, are we?", "Need a little help? Cute."],
-  playerWins:       ["You got me. Bawk...", "Rematch. Now."],
-  playerLoses:      ["Better luck next time.", "Cluck cluck!"],
-  resume:           ["You're back. Let's finish this."]
-};
-```
-
-Keep every line playful and never mean.
+The cat's word bank lives in `src/logic/trash-talk.ts` as `catTalk`. It has the same categories as the frog bank (`trashTalk`) and no frog lines. A unit test checks both points. Keep every line playful and never mean.
 
 ---
 
 ## 8. Definition of done (applies to every milestone)
 
 - Works offline after the first load
-- Looks right in **dark and light**, with the **frog and chicken**
+- Looks right in **dark and light**, with the **frog and cat**
 - Works at 360 px and 430 px widths, with iOS and Android safe areas respected
 - Touch targets about 44 px or more for primary controls
 - Keyboard focus visible, `aria-label` on icon-only controls, dialogs and sheets trap and restore focus
@@ -670,9 +648,9 @@ Keep every line playful and never mean.
 ## 10. Open questions
 
 1. Confirm decisions D1 to D10 (especially D1 and D2: the theme controls the animal, and the theme is locked while a battle exists).
-2. Should Settings also offer a manual **Opponent** override (for example chicken in dark mode)? It is a small addition, but it breaks the pure "theme decides" rule.
+2. Should Settings also offer a manual **Opponent** override (for example cat in dark mode)? It is a small addition, but it breaks the pure "theme decides" rule.
 3. Do you want the optional **XP and Level** system (D10)?
 4. Do you want backup and restore (D9) in this phase?
 5. Where should "Report a problem" point (an email address or an issue tracker URL)?
-6. Preferred light-mode board colors (keep the same blues, or a warmer set to match the chicken)?
+6. Preferred light-mode board colors (keep the same blues, or a warmer set to match the cat)?
 7. The theme lock applies to battles only. Puzzles and lessons just use the current theme's animal. Is that okay?

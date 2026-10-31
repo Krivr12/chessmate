@@ -1,14 +1,11 @@
-import { chickenTalk, trashTalk, type TrashTalkBank } from './trash-talk'
-import type { Difficulty } from './types'
+import { catTalk, trashTalk, type TrashTalkBank } from './trash-talk'
 
-export type OpponentId = 'frog' | 'chicken'
+export type OpponentId = 'frog' | 'cat'
 
 export type Opponent = {
   id: OpponentId
   /** Name shown in headers, copy, and aria labels. */
   name: string
-  /** Friendly name for each difficulty level (D8). */
-  difficultyNames: Record<Difficulty, string>
   /** This opponent's own word bank (D2). */
   lines: TrashTalkBank
 }
@@ -17,21 +14,22 @@ export const OPPONENTS: Record<OpponentId, Opponent> = {
   frog: {
     id: 'frog',
     name: 'Frog',
-    difficultyNames: { easy: 'Sleepy', medium: 'Regular', hard: 'Big brain' },
     lines: trashTalk,
   },
-  chicken: {
-    id: 'chicken',
-    name: 'Chicken',
-    difficultyNames: { easy: 'Chick', medium: 'Hen', hard: 'Rooster' },
-    lines: chickenTalk,
+  cat: {
+    id: 'cat',
+    name: 'Cat',
+    lines: catTalk,
   },
 }
 
-/** The theme decides the animal: dark = frog, light = chicken (D1). */
+/** The theme decides the animal: dark = frog, light = cat (D1). */
 export const opponentForTheme = (resolved: 'dark' | 'light'): OpponentId =>
-  resolved === 'dark' ? 'frog' : 'chicken'
+  resolved === 'dark' ? 'frog' : 'cat'
 
-/** Old MVP saves have no opponent field, so they resume as the frog. */
+/**
+ * Saved battles from before the rename store `chicken`, which now means the cat.
+ * Old MVP saves have no opponent field, so they resume as the frog.
+ */
 export const opponentOrDefault = (id: unknown): OpponentId =>
-  id === 'frog' || id === 'chicken' ? id : 'frog'
+  id === 'cat' || id === 'chicken' ? 'cat' : 'frog'

@@ -1,0 +1,12 @@
+{
+  "id": "basics-board",
+  "title": "The board and pieces",
+  "track": "basics",
+  "order": 1,
+  "steps": [
+    { "type": "text", "title": "Welcome", "body": "Chess is played on an 8 by 8 board. Each side starts with 16 pieces: 8 pawns and 8 others. White moves first." },
+    { "type": "demo", "title": "The starting position", "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "body": "White's pieces start on the bottom two ranks. Every board has a light square in the bottom right corner. For White that is h1." },
+    { "type": "quiz", "question": "How many pieces does each player start with?", "options": ["12", "16", "14"], "answer": 1, "explanation": "16 in total: 8 pawns and 8 pieces." },
+    { "type": "try-it", "body": "Move the pawn on e2 forward two squares to e4.", "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", "answers": ["e2e4"], "hint": "Pawns can jump two squares on their first move.", "success": "Good. That is the most popular first move in chess." }
+  ]
+}

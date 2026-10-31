@@ -442,3 +442,17 @@ Notes:
 - M5 (animation) and M6 (engine) are independent and can be done in either order or in parallel.
 - M12 (undo) relies on the piece-ID rebuild from M5.7; M14 (resume) relies on it too.
 - M13 needs the grade data from M9 for the summary card.
+
+---
+
+## Changes after the milestones above (October 2026)
+
+The milestone list above is the history of the build. These changes came later and replace parts of it:
+
+- **Opponent:** the chicken is now the cat. The opponent ID is `cat`, and the word bank is `catTalk` in `src/logic/trash-talk.ts`. Saved battles that stored `chicken` load as the cat. The old `chicken.tsx` and `frog.tsx` SVG components are gone. Both opponents now use WebP sprites from `public/opponents/`, cut from the emote sheet by `scripts/extract-opponent-sprites.mjs`.
+- **Mood:** `Mood` gained `angry`. The sprites cover happy, sad, shock, angry, idle, and think.
+- **New game sheet:** the difficulty tiles show the engine strength (Easy 10%, Medium 50%, Hard 100%). The animal names and the avatar icons were removed.
+- **Start page:** `/` always shows the landing page, on every app open. It shows a placeholder human icon and an "Enter game" button. The first-launch flag is no longer read. The title and tagline were removed.
+- **Home:** the header shows "ChessMate" only. The greeting and display name were removed.
+- **Captured panel:** the box around each piece was removed, and the icons and counts are larger.
+- **Cleanup:** removed `src/components/chess/knight-logo.tsx` and `public/icons/hint-lightbulb.svg`, which nothing imported. The trophy and sad-king SVGs stay because the result screen uses them. `favicon.svg` stays for `index.html`.
