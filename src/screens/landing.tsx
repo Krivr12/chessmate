@@ -18,7 +18,7 @@ function BackgroundShapes() {
   return (
     <svg
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 h-full w-full text-surface-3"
+      className="pointer-events-none fixed inset-0 h-dvh w-full text-surface-3"
       viewBox="0 0 390 844"
       preserveAspectRatio="xMidYMid slice"
       fill="none"

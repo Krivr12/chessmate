@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
+
+  <title id="title">ChessMate Sad King with Confetti</title>
+
+  <desc id="desc">A lavender chess king with a cross-shaped crown, X eyes, a frown, and colorful stars and confetti on a transparent background.</desc>
+
+  <defs>
+
+    <style>
+
+      :root {
+
+        --king-top: #E7DFFF;
+
+        --king-bottom: #B6A8F4;
+
+        --king-highlight: #F5F0FF;
+
+        --king-shadow: #A395E8;
+
+        --face: #12263A;
+
+        --coral: #FF7188;
+
+        --pink: #F58BD4;
+
+        --yellow: #FFE27B;
+
+        --white: #FFF9EB;
+
+        --blue: #8EC7FF;
+
+      }
+
+      .king { fill: url(#kingGradient); }
+
+      .highlight { fill: var(--king-highlight); opacity: .45; }
+
+      .face { fill: none; stroke: var(--face); stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; }
+
+      .coral { fill: var(--coral); }
+
+      .pink { fill: var(--pink); }
+
+      .yellow { fill: var(--yellow); }
+
+      .white { fill: var(--white); }
+
+      .blue { fill: var(--blue); }
+
+    </style>
+
+    <linearGradient id="kingGradient" x1="0" y1="0" x2="0.2" y2="1">
+
+      <stop offset="0" stop-color="#EEE7FF"/>
+
+      <stop offset=".52" stop-color="#D5C9FF"/>
+
+      <stop offset="1" stop-color="#B5A7F3"/>
+
+    </linearGradient>
+
+  </defs>
+
+  <!-- Scale the 800x700 artwork into the trophy's 240x240 canvas -->
+  <g transform="translate(120 120) scale(0.37) translate(-397 -287)">
+
+  <!-- Stars and confetti circling the piece. Nothing sits below the base. -->
+
+  <path class="white" d="M400 10Q403.4 34.6 428 38Q403.4 41.4 400 66Q396.6 41.4 372 38Q396.6 34.6 400 10Z"/>
+
+  <path class="coral" d="M188 121Q192.1 150.9 222 155Q192.1 159.1 188 189Q183.9 159.1 154 155Q183.9 150.9 188 121Z"/>
+
+  <path class="pink" d="M612 121Q616.1 150.9 646 155Q616.1 159.1 612 189Q607.9 159.1 578 155Q607.9 150.9 612 121Z"/>
+
+  <path class="yellow" d="M160 245Q163.6 271.4 190 275Q163.6 278.6 160 305Q156.4 278.6 130 275Q156.4 271.4 160 245Z"/>
+
+  <path class="pink" d="M640 391Q642.9 412.1 664 415Q642.9 417.9 640 439Q637.1 417.9 616 415Q637.1 412.1 640 391Z"/>
+
+  <rect class="coral" x="297" y="76.5" width="50" height="15" rx="7.5" transform="rotate(255 322 84)"/>
+
+  <rect class="pink" x="453" y="76.5" width="50" height="15" rx="7.5" transform="rotate(285 478 84)"/>
+
+  <rect class="yellow" x="615" y="267.5" width="50" height="15" rx="7.5" transform="rotate(345 640 275)"/>
+
+  <rect class="blue" x="135" y="407.5" width="50" height="15" rx="7.5" transform="rotate(165 160 415)"/>
+
+  <!-- Cross-shaped crown -->
+
+  <path fill="#8EC7FF" transform="translate(0 21.5)" d="M387 190 V170 H373 Q367 170 367 164 V150 Q367 144 373 144 H387 V126 Q387 120 393 120 H407 Q413 120 413 126 V144 H427 Q433 144 433 150 V164 Q433 170 427 170 H413 V190 Q400 207 387 190Z"/>
+
+  <!-- King head: broad rounded crown/head silhouette matching the reference -->
+
+  <path class="king" d="M338 215
+
+    C315 215 297 229 291 250
+
+    C283 277 295 313 311 340
+
+    L326 365
+
+    C329 371 335 374 343 374
+
+    H457
+
+    C465 374 471 371 474 365
+
+    L489 340
+
+    C505 313 517 277 509 250
+
+    C503 229 485 215 462 215
+
+    C440 215 423 228 400 228
+
+    C377 228 360 215 338 215Z"/>
+
+  <path class="highlight" d="M310 254 C319 230 340 226 359 234 C344 236 329 247 325 266 C320 287 330 319 342 343 L329 340 C313 312 302 278 310 254Z"/>
+
+  <!-- X eyes and sad mouth -->
+
+  <path class="face" d="M338 276 L360 298 M360 276 L338 298"/>
+
+  <path class="face" d="M440 276 L462 298 M462 276 L440 298"/>
+
+  <path class="face" d="M382 324 Q400 310 418 324"/>
+
+  <!-- Neck / collar -->
+
+  <path class="king" transform="translate(0 8)" d="M315 384 Q315 374 326 374 H474 Q485 374 485 384 V405 Q485 417 473 417 H327 Q315 417 315 405Z"/>
+
+  <path class="highlight" transform="translate(0 8)" d="M326 379 H474 Q480 379 480 386 H320 Q320 379 326 379Z"/>
+
+  <!-- Lower body and wide rounded plinth -->
+
+  <path class="king" transform="translate(0 14)" d="M322 430
+
+    Q328 419 340 419 H460
+
+    Q472 419 478 430
+
+    L505 470
+
+    Q516 487 511 506
+
+    Q506 526 480 531
+
+    Q400 547 320 531
+
+    Q294 526 289 506
+
+    Q284 487 295 470Z"/>
+
+  <path class="highlight" transform="translate(0 14)" d="M321 433 Q329 423 341 423 H459 Q471 423 479 433 L495 457 Q400 481 305 457Z"/>
+
+  <path fill="#B3A4F1" transform="translate(0 14)" d="M291 493 Q400 529 509 493 Q518 514 497 526 Q400 551 303 526 Q282 514 291 493Z"/>
+
+  </g>
+</svg>

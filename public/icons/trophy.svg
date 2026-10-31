@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title">
+<title id="title">ChessMate Trophy</title>
+<defs>
+<style>:root{--trophy:#79F2C6;--shadow:#45D9AC;--detail:#07382F;--sparkle:#FFE29A;--blue:#7FB8FF;--purple:#B9A6FF}.cup,.base{fill:var(--trophy)}.shadow{fill:var(--shadow)}.detail{fill:var(--detail)}.sparkle{fill:var(--sparkle)}.blue{fill:var(--blue)}.purple{fill:var(--purple)}</style>
+<radialGradient id="halo" cx="50%" cy="50%" r="50%">
+<stop offset="0" stop-color="#79F2C6" stop-opacity="0.38"/>
+<stop offset="0.6" stop-color="#79F2C6" stop-opacity="0.10"/>
+<stop offset="1" stop-color="#79F2C6" stop-opacity="0"/>
+</radialGradient>
+<radialGradient id="floor" cx="50%" cy="50%" r="50%">
+<stop offset="0" stop-color="#000000" stop-opacity="0.45"/>
+<stop offset="1" stop-color="#000000" stop-opacity="0"/>
+</radialGradient>
+</defs>
+
+<!-- Background with smooth depth: radial vignette, top sheen, and a soft glow behind the trophy -->
+<circle cx="120" cy="120" r="110" fill="url(#halo)"/>
+<ellipse cx="120" cy="206" rx="54" ry="8" fill="url(#floor)"/>
+
+<!-- Stars, placed outside the trophy's footprint -->
+<path class="sparkle" d="M30 18Q31.5 28.5 42 30Q31.5 31.5 30 42Q28.5 31.5 18 30Q28.5 28.5 30 18Z"/>
+<path class="sparkle" d="M212 26Q213.2 34.8 222 36Q213.2 37.2 212 46Q210.8 37.2 202 36Q210.8 34.8 212 26Z"/>
+<path class="sparkle" d="M20 158Q21 165 28 166Q21 167 20 174Q19 167 12 166Q19 165 20 158Z"/>
+<path class="sparkle" d="M218 133Q219 139 225 140Q219 141 218 147Q217 141 211 140Q217 139 218 133Z"/>
+<path class="sparkle" transform="translate(8 -10)" d="M196 197Q197 203 203 204Q197 205 196 211Q195 205 189 204Q195 203 196 197Z"/>
+<path class="sparkle" d="M120 11Q120.6 15.4 125 16Q120.6 16.6 120 21Q119.4 16.6 115 16Q119.4 15.4 120 11Z"/>
+
+<!-- Confetti streaks radiating outward from the trophy center (120,120).
+     Each streak is 16 long, centered at radius 104, and rotated to its angle. -->
+<rect class="blue" x="8.4" y="108.4" width="16" height="5" rx="2.5" transform="rotate(185 16.4 110.9)"/>
+<rect class="purple" x="14.3" y="81.9" width="16" height="5" rx="2.5" transform="rotate(200 22.3 84.4)"/>
+<rect class="sparkle" x="76.4" y="19.8" width="16" height="5" rx="2.5" transform="rotate(250 84.4 22.3)"/>
+<rect class="blue" x="152.6" y="21.8" width="16" height="5" rx="2.5" transform="rotate(293 160.6 24.3)"/>
+<rect class="purple" x="209.7" y="81.9" width="16" height="5" rx="2.5" transform="rotate(340 217.7 84.4)"/>
+
+<!-- Trophy, scaled to 80% around the center so the confetti has room -->
+<g transform="translate(120 120) scale(0.8) translate(-120 -120)">
+<path class="shadow" d="M62 61H42c-9 0-15 7-14 16l2 17c2 17 15 29 34 30h12V108H64c-10-1-17-7-18-17l-2-14h18z M178 61h20c9 0 15 7 14 16l-2 17c-2 17-15 29-34 30h-12V108h12c10-1 17-7 18-17l2-14h-18z"/>
+<path class="cup" d="M59 48c0-5 4-9 9-9h104c5 0 9 4 9 9v43c0 35-22 59-52 65v17h-18v-17c-30-6-52-30-52-65z"/>
+<path class="shadow" opacity=".22" d="M59 77h122v14c0 35-22 59-52 65v17h-18v-17c-30-6-52-30-52-65z"/>
+<path class="detail" d="M120 60l8 16 18 3-13 13 3 18-16-9-16 9 3-18-13-13 18-3z"/>
+<path class="base" d="M105 154h30v29h-30z M83 181h74c5 0 9 4 9 9v8H74v-8c0-5 4-9 9-9z M67 201h106c6 0 11 5 11 11v7H56v-7c0-6 5-11 11-11z"/>
+</g>
+</svg>

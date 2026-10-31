@@ -18,7 +18,7 @@ export const trashTalk = {
   opponentChecks: ['Check!', 'Watch your king.'],
   hintUsed: ['Need a little help? Cute.', 'Peeking, are we?'],
   playerWins: ['You got me. Ribbit...', 'Rematch. Now.'],
-  playerLoses: ['Better luck next time.', 'Ribbit ribbit!'],
+  playerLoses: ['You Loss.', 'Ribbit ribbit!'],
   draw: ['A draw? I was just warming up.', "Fine. We'll call it even."],
   gameStart: ['Amaze me! If you can.'],
   resume: ["You're back. Let's finish this."],

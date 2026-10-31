@@ -52,7 +52,7 @@ Your new design is a full puzzle app. This app is a play-against-the-AI app, and
 | Hint card (mint) | **Adopted** |
 | Win Chance card (blue, percentage, progress bar) | **Adopted** |
 | Hint panel with "Play Nf7+" and "Dismiss" | **Adopted** as a bottom sheet (section 6.4) |
-| Win screen (trophy, "You Win!", mint button) and Loss screen (toppled king, "Better Luck Next Time") | **Adopted**, with a "Game summary" card replacing "Final Win Chance" (section 6.5) |
+| Win screen (trophy, "You Win!", mint button) and Loss screen (toppled king, "You Loss!") | **Adopted**, with a "Game summary" card replacing "Final Win Chance" (section 6.5) |
 | "Next Puzzle" and "View Solution" buttons | Replaced by "Play again" and "Home". "Review game" comes later with analysis |
 | Puzzle library, thumbnails, filters | **Deferred** |
 | Solution / move analysis screen | **Deferred** |
@@ -302,7 +302,7 @@ Dedicated full-screen states, not toasts. They appear after checkmate, stalemate
 | | Win | Loss | Draw |
 |---|---|---|---|
 | Illustration | Trophy with mint particles | Toppled king with X eyes, restrained coral accents | Two kings or an equal sign |
-| Heading | "You Win!" | "Better Luck Next Time" | "It's a Draw" |
+| Heading | "You Win!" | "You Loss" | "It's a Draw" |
 | Message | Short, positive | Short, encouraging, never punishing | Short, neutral |
 | Primary button | **Play again** (mint) | **Try again** (blue) | **Play again** (blue) |
 | Secondary button | Home (outlined) | Home (outlined) | Home (outlined) |
@@ -524,7 +524,7 @@ export const trashTalk = {
   opponentChecks:   ["Check!", "Watch your king."],
   hintUsed:         ["Need a little help? Cute.", "Peeking, are we?"],
   playerWins:       ["You got me. Ribbit...", "Rematch. Now."],
-  playerLoses:      ["Better luck next time.", "Ribbit ribbit!"],
+  playerLoses:      ["You Loss.", "Ribbit ribbit!"],
   gameStart:        ["Amaze me! If you can."],
   resume:           ["You're back. Let's finish this."]
 };

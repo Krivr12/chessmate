@@ -302,7 +302,7 @@ Everything here is plain TypeScript with unit tests, so the UI milestones can bu
 - [x] **13.1 Build the result container:** full-screen layer shown after checkmate, stalemate, draw, or resignation (a state of the Game page, not a route). Dark background stays
 - [x] **13.2 Draw custom SVGs:** trophy (win), toppled king with X eyes (loss), two kings or equal sign (draw)
 - [x] **13.3 Build `win-screen.tsx`:** "You Win!", mint particles, **Play again** (mint) and **Home** (outlined)
-- [x] **13.4 Build `loss-screen.tsx`:** "Better Luck Next Time", restrained coral accents, **Try again** (blue) and **Home**
+- [x] **13.4 Build `loss-screen.tsx`:** "You Loss", restrained coral accents, **Try again** (blue) and **Home**
 - [x] **13.5 Build `draw-screen.tsx`:** "It's a Draw", neutral tone, **Play again** and **Home**
 - [x] **13.6 Build `game-summary-card.tsx`:** accuracy percentage with a progress bar, counts of moves, best moves, mistakes, blunders (each with its icon)
 - [x] **13.7 Build `particles.tsx`:** 30 to 60 particles max, easing `cubic-bezier(0.16, 1, 0.3, 1)`, 350 to 650 ms entrance, progress bar fill 600 to 900 ms, buttons never delayed

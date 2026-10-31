@@ -318,7 +318,7 @@ positive message - Final win chance card - Mint primary "Next Puzzle"
 button - Outlined "View Solution" button
 
 **Loss screen** - Chess-piece illustration or expressive chess king -
-Heading: "Better Luck Next Time" - Encouraging short message - Final win
+Heading: "You Loss" - Encouraging short message - Final win
 chance card - Blue primary "Try Again" button - Outlined "View Solution"
 button
 
@@ -445,7 +445,7 @@ Treat this as a dedicated result state, not merely a toast notification.
 ### 7.5 Loss screen
 
 -   Chess-piece illustration or expressive chess king
--   "Better Luck Next Time" heading
+-   "You Loss" heading
 -   Short, encouraging message
 -   Final win chance card
 -   Blue "Try Again" button

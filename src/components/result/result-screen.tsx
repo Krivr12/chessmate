@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
-import { Frog } from '@/components/opponent/frog'
 import { Button } from '@/components/ui/button'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import type { MoveRecord, Outcome } from '@/logic/types'
 import { GameSummaryCard } from './game-summary-card'
-import { DrawArt, ToppledKingArt, TrophyArt } from './illustrations'
+import { DrawArt, SadKingArt, TrophyArt } from './illustrations'
 import { Particles } from './particles'
 
 const CONTENT = {
@@ -15,17 +14,21 @@ const CONTENT = {
     message: 'Sharp play. The frog is not amused.',
     primary: 'Play again',
     variant: 'mint' as const,
+    headingClass: '',
+    buttonClass: '',
+    barClass: 'bg-mint',
     particles: { colors: ['#79f2c6', '#9fd4ff', '#ffe29a'], direction: 'burst' as const },
-    frogMood: 'sad' as const,
   },
   loss: {
-    art: ToppledKingArt,
-    heading: 'Better Luck Next Time',
+    art: SadKingArt,
+    heading: 'You Loss',
     message: 'Every game teaches something. Go again?',
     primary: 'Try again',
     variant: 'default' as const,
-    particles: { colors: ['#ff8f93', '#15364a'], direction: 'fall' as const },
-    frogMood: 'happy' as const,
+    headingClass: 'text-[#ffc0c5]',
+    buttonClass: 'bg-[#ff8f93] text-[#14111f] hover:bg-[#ffa3a7] hover:shadow-[0_0_16px_rgba(255,143,147,0.35)]',
+    barClass: 'bg-[#ff8f93]',
+    particles: { colors: ['#ff8f93', '#ffc0c5'], direction: 'fall' as const },
   },
   draw: {
     art: DrawArt,
@@ -33,8 +36,10 @@ const CONTENT = {
     message: 'Evenly matched. For now.',
     primary: 'Play again',
     variant: 'default' as const,
+    headingClass: '',
+    buttonClass: '',
+    barClass: 'bg-mint',
     particles: null,
-    frogMood: 'idle' as const,
   },
 }
 
@@ -72,15 +77,14 @@ export function ResultScreen({ outcome, moves, onPlayAgain, onHome }: ResultScre
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.55, ease }}
         >
-          <c.art className="size-32" />
-          <Frog mood={c.frogMood} className="absolute -right-8 -bottom-2 size-12" />
+          <c.art className="size-48" />
         </motion.div>
         <div className="flex flex-col gap-2">
           <h2
             id="result-heading"
             ref={headingRef}
             tabIndex={-1}
-            className="text-[2rem] font-extrabold tracking-tight outline-none"
+            className={`text-[2rem] font-extrabold tracking-tight outline-none ${c.headingClass}`}
             aria-live="assertive"
           >
             {c.heading}
@@ -89,9 +93,9 @@ export function ResultScreen({ outcome, moves, onPlayAgain, onHome }: ResultScre
             {outcome.reason}. {c.message}
           </p>
         </div>
-        <GameSummaryCard moves={moves} reduceMotion={reduceMotion} />
+        <GameSummaryCard moves={moves} reduceMotion={reduceMotion} barClassName={c.barClass} />
         <div className="flex w-full flex-col gap-3">
-          <Button variant={c.variant} size="lg" onClick={onPlayAgain}>
+          <Button variant={c.variant} size="lg" className={c.buttonClass} onClick={onPlayAgain}>
             {c.primary}
           </Button>
           <Button variant="outline" size="lg" onClick={onHome}>

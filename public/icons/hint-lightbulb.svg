@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-labelledby="title desc">
+
+  <title id="title">ChessMate Hint Lightbulb</title>
+
+  <desc id="desc">A clean mint lightbulb made from two primary filled shapes, with a dark teal filament and exactly seven rounded light rays.</desc>
+
+  <defs>
+
+    <style>
+
+      :root {
+
+        --bulb: #79F2C6;
+
+        --bulb-light: #A9FFE2;
+
+        --bulb-base: #45DDB0;
+
+        --filament: #075348;
+
+        --ray: #79F2C6;
+
+      }
+
+      .bulb-glass { fill: url(#bulbGradient); }
+
+      .bulb-base { fill: var(--bulb-base); }
+
+      .filament { fill: none; stroke: var(--filament); stroke-width: 17; stroke-linecap: round; stroke-linejoin: round; }
+
+      .ray { fill: var(--ray); }
+
+    </style>
+
+    <linearGradient id="bulbGradient" x1="0" y1="0" x2=".85" y2="1">
+
+      <stop offset="0" stop-color="#A9FFE2"/>
+
+      <stop offset="1" stop-color="#65E9C1"/>
+
+    </linearGradient>
+
+  </defs>
+
+  <!-- Exactly seven rounded light rays -->
+
+  <g class="ray">
+
+    <rect x="288" y="45" width="24" height="72" rx="12"/>
+
+    <rect x="288" y="45" width="24" height="72" rx="12" transform="rotate(45 300 300)"/>
+
+    <rect x="288" y="45" width="24" height="72" rx="12" transform="rotate(90 300 300)"/>
+
+    <rect x="288" y="45" width="24" height="72" rx="12" transform="rotate(135 300 300)"/>
+
+    <rect x="288" y="45" width="24" height="72" rx="12" transform="rotate(225 300 300)"/>
+
+    <rect x="288" y="45" width="24" height="72" rx="12" transform="rotate(270 300 300)"/>
+
+    <rect x="288" y="45" width="24" height="72" rx="12" transform="rotate(315 300 300)"/>
+
+  </g>
+
+  <!-- Primary shape 1: bulb glass -->
+
+  <path class="bulb-glass" d="M300 145
+
+    C236 145 184 197 184 261
+
+    C184 301 202 329 223 352
+
+    C239 369 250 386 254 407
+
+    H346
+
+    C350 386 361 369 377 352
+
+    C398 329 416 301 416 261
+
+    C416 197 364 145 300 145Z"/>
+
+  <!-- Simple filament detail -->
+
+  <path class="filament" d="M270 260 Q270 244 285 244 Q300 244 300 261 Q300 244 315 244 Q330 244 330 260 M300 261 V350"/>
+
+  <!-- Primary shape 2: simple rounded base -->
+
+  <path class="bulb-base" d="M254 407 H346 V438
+
+    C346 454 333 467 317 467 H283
+
+    C267 467 254 454 254 438Z"/>
+
+</svg>

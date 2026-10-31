@@ -4,7 +4,15 @@ import { GRADE_META } from '@/lib/grade-meta'
 import { gameAccuracy } from '@/logic/accuracy'
 import type { MoveRecord } from '@/logic/types'
 
-export function GameSummaryCard({ moves, reduceMotion }: { moves: MoveRecord[]; reduceMotion: boolean }) {
+export function GameSummaryCard({
+  moves,
+  reduceMotion,
+  barClassName = 'bg-mint',
+}: {
+  moves: MoveRecord[]
+  reduceMotion: boolean
+  barClassName?: string
+}) {
   const accuracy = gameAccuracy(moves)
   const mine = moves.filter((m) => m.by === 'player')
   const count = (g: string) => mine.filter((m) => m.grade === g).length
@@ -24,7 +32,7 @@ export function GameSummaryCard({ moves, reduceMotion }: { moves: MoveRecord[]; 
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-surface-3" aria-hidden="true">
         <motion.div
-          className="h-full rounded-full bg-mint"
+          className={`h-full rounded-full ${barClassName}`}
           initial={{ width: reduceMotion ? `${pct ?? 0}%` : '0%' }}
           animate={{ width: `${pct ?? 0}%` }}
           transition={{ duration: reduceMotion ? 0 : 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
