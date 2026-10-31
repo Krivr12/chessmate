@@ -35,7 +35,7 @@ function LessonCard({
       <span
         className={cn(
           'flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
-          state === 'done' ? 'bg-mint text-accent-foreground' : 'bg-surface-3 text-text-primary',
+          state === 'done' ? 'bg-win-card-fill text-win-card' : 'bg-surface-3 text-text-primary',
         )}
         aria-hidden="true"
       >
@@ -81,6 +81,17 @@ export default function Learn() {
   }, [])
 
   const states = useMemo(() => lessonStates(LESSONS, progress), [progress])
+
+  // Empty state if no lessons are available
+  if (LESSONS.length === 0) {
+    return (
+      <main className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+        <BookOpen className="size-12 text-text-secondary opacity-50" strokeWidth={1.5} />
+        <h1 className="text-lg font-bold text-text-primary">Learn chess basics</h1>
+        <p className="text-sm text-text-secondary">More lessons coming soon. Try puzzles or play a game to learn.</p>
+      </main>
+    )
+  }
 
   return (
     <main className="flex flex-1 flex-col gap-5 px-4 pt-4 pb-4">

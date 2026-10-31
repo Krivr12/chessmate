@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Pause, Play, RefreshCw } from 'lucide-react'
+import { ArrowLeft, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Pause, Play, RefreshCw, Play as PlayIcon } from 'lucide-react'
 import type { Square } from 'chess.js'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
@@ -13,6 +13,7 @@ import type { GameRecord } from '@/logic/game-record'
 import { OPPONENTS } from '@/logic/opponents'
 import { criticalMoments, plyLabel } from '@/logic/review'
 import { getGame, saveGame } from '@/storage/games'
+import { useGameStore } from '@/store/game-store'
 
 const RESULT = { win: 'Win', loss: 'Loss', draw: 'Draw' } as const
 const DIFFICULTY = { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as const
@@ -295,6 +296,23 @@ export default function Review() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm font-semibold text-text-secondary">Next</h2>
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-2"
+          onClick={() => {
+            // Start a new game from the current position
+            const positionFen = positions[index]
+            useGameStore.getState().newGameFromFen(positionFen, record.difficulty, record.playerColor)
+            navigate('/play')
+          }}
+        >
+          <PlayIcon className="size-4" strokeWidth={1.8} aria-hidden="true" />
+          Play from this position
+        </Button>
       </section>
     </main>
   )

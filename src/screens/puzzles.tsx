@@ -170,8 +170,8 @@ export default function Puzzles() {
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-text-secondary">
           {unsolvedOnly && items.length > 0
-            ? 'Every puzzle here is solved. Turn off "Unsolved only" to see them again.'
-            : 'No puzzles match these filters.'}
+            ? 'All puzzles in this category are solved. Turn off "Unsolved only" to see them.'
+            : 'No puzzles match this filter.'}
         </div>
       ) : (
         <>

@@ -125,7 +125,7 @@
   --popover: #ffffff;
   --popover-foreground: #202b36;
 
-  --primary: #ff6b1a;
+  --primary: #8b5a3c;
   --primary-foreground: #ffffff;
 
   --secondary: #ffffff;
@@ -142,22 +142,22 @@
 
   --border: #eae6de;
   --input: #eae6de;
-  --ring: #ff6b1a;
+  --ring: #8b5a3c;
 
-  --chart-1: #ff6b1a;
+  --chart-1: #8b5a3c;
   --chart-2: #28c995;
   --chart-3: #ffd36e;
   --chart-4: #cbb8f5;
-  --chart-5: #ff8e7c;
+  --chart-5: #d4756d;
 
   --sidebar: #ffffff;
   --sidebar-foreground: #202b36;
-  --sidebar-primary: #ff6b1a;
+  --sidebar-primary: #8b5a3c;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #f7f4ee;
   --sidebar-accent-foreground: #202b36;
   --sidebar-border: #eae6de;
-  --sidebar-ring: #ff6b1a;
+  --sidebar-ring: #8b5a3c;
 
   --app-bg: #fffdf8;
   --surface-1: #ffffff;
@@ -165,11 +165,11 @@
   --surface-3: #f7f4ee;
 
   --blue: #365d7a;
-  /* Bright orange replaces mint for hints, success, and the Hint sheet in light mode. */
-  --mint: #ff7a1f;
+  /* Warm brown replaces mint for hints, success, and the Hint sheet in light mode. */
+  --mint: #a0694d;
   --yellow: #ffd36e;
   --lavender: #cbb8f5;
-  --coral: #ff8e7c;
+  --coral: #d4756d;
 
   --text-primary: #202b36;
   --text-secondary: #66717d;
@@ -178,20 +178,20 @@
 
   --board-light: #fff0d9;
   --board-dark: #f5c98d;
-  --board-selected: #ff9a3c;
-  --board-last-move: #ffb070;
-  --board-legal-move: #ff6b1a;
-  --board-check: #ff8e7c;
+  --board-selected: #d4956a;
+  --board-last-move: #e0a366;
+  --board-legal-move: #8b5a3c;
+  --board-check: #d4756d;
   --piece-player-fill: #ffffff;
   --piece-player-stroke: #26323d;
   --piece-opponent-fill: #26323d;
   --piece-opponent-detail: #ffffff;
 
-  /* Win chance card: light orange panel, bright orange progress */
-  --win-card-bg: #ffe4cc;
-  --win-card-fg: #7a2e05;
-  --win-card-track: #ffd0a8;
-  --win-card-fill: #ff6b1a;
+  /* Win chance card: light brown panel, dark brown progress */
+  --win-card-bg: #f5e6d3;
+  --win-card-fg: #5a3c2a;
+  --win-card-track: #e8d4c0;
+  --win-card-fill: #8b5a3c;
 
   --shadow-card: 0 4px 16px rgba(32, 43, 54, 0.06);
   --shadow-popover: 0 16px 48px rgba(32, 43, 54, 0.18);
@@ -318,5 +318,10 @@ html.theme-fade * {
   ::selection {
     background: var(--blue);
     color: var(--primary-foreground);
+  }
+
+  /* Unachieved medal badges (locked): lower opacity in dark mode only */
+  .dark span[aria-hidden="true"].text-text-secondary {
+    opacity: 0.4;
   }
 }

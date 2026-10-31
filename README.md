@@ -1,18 +1,88 @@
-# ChessMate: Offline Chess PWA (Phase 1 Guide)
+# ChessMate: Offline Chess PWA
 
-A local, offline-first chess app with a cute animal opponent, hints, win percentage, and graded moves. Dark navy, pastel, shape-first design. Installable as a PWA. No backend, no accounts.
+A local, offline-first chess app with cute animal opponents (frog in dark mode, cat in light mode), AI play at three difficulty levels, hints, win percentage analysis, graded moves, puzzles, lessons, and full game history. Dark and light themes, installable as a PWA. No backend, no accounts, no multiplayer.
 
-**Version:** 3 (scoped to the **Landing page and Game page only**; matches the ChessMate UI design and `docs/chessmate-ui-design-spec.md`)
+**Current Version:** Phase 2 complete - Full featured local app with Home dashboard, Puzzles, Learn, Profile, Game review, Settings, and Help.
 
-> **Source of truth for visuals:** `docs/chessmate-ui-design-spec.md` (colors, type, spacing, component sizes, icon map, Shadcn theme CSS). This guide does not repeat it in full. It records the decisions, adaptations, and everything the spec does not cover (engine, grading, storage, PWA).
+**Status:** Ready for testing and deployment.
+
+> **Design source:** `docs/chessmate-ui-design-spec.md` (colors, typography, spacing, component specs, icons)
 >
-> **App name:** "ChessMate" is the working title from your design. Keep it in one constant (`APP_NAME`) and in the manifest so renaming later is a two-line change.
->
-> Package versions and file names should be checked against current docs when you install. They change faster than this guide.
+> **Phase 2 spec:** `phase-2.md` (architecture, milestones, decisions, risks)
 
 ---
 
-## 1. Phase 1 goals
+## What's included
+
+### Core gameplay
+- Play against Stockfish engine at Easy (10%), Medium (50%), or Hard (100%) strength
+- Play as white or black
+- Animated piece movement with promotion picker
+- Undo, redo, restart moves
+- Real-time win chance percentage and move grading (Best, Great, Good, Inaccuracy, Mistake, Blunder)
+- Opponent commentary with mood expressions
+- Autosave and resume from the last game
+
+### Dashboard & Navigation
+- Home screen with resume battle, quick access to puzzles and lessons, recent stats
+- Bottom navigation (Home, Puzzles, Learn, Profile)
+- Responsive design for phones (360 px and up)
+
+### Puzzles
+- 500+ chess puzzles bundled offline, categorized by difficulty
+- Puzzle library with filtering by level and theme
+- Progress tracking (first-try solves, hints used)
+- Hint system with piece and destination highlighting
+- Solution playback with move annotation
+
+### Learn
+- Interactive chess lessons with text, demonstrations, quizzes, and "try it" exercises
+- Multiple tracks: Basics, Tactics, Openings, Endgames
+- Progress tracking across lessons
+- Reusable lesson board with highlights and arrows
+
+### Analysis & Review
+- Full game review for every finished game with win chance graph
+- Critical moment identification (biggest win % drops)
+- Move-by-move replay with keyboard shortcuts
+- Play from any position to continue practice
+- Background engine analysis for games saved without full evaluation
+
+### Profile & Statistics
+- Win rate, streaks (day and win), and game counts by result
+- Accuracy bars for recent games
+- Win/loss counts by difficulty
+- Puzzle statistics and lesson completion
+- Editable player name
+- Badge system: First Win, Getting Started, Giant Slayer, Clean Game, Comeback, Quick Mate, Streaks, Puzzle badges, Graduate
+
+### Settings
+- Theme selection (Dark, Light, System) with opponent locked to theme
+- Highlight last move toggle
+- Hint display toggle
+- Default difficulty and color for new games
+- Sound and haptic feedback options
+- Data management: clear history, puzzles, lessons, settings, everything
+- Export/import game data for backup
+
+### Other features
+- Help & Support with FAQ, quick start, troubleshooting, credits, and diagnostics
+- Offline first: works without internet after first load
+- PWA: installable on phones, home screen icon, works offline
+- Theme system: automatically switches between dark and light based on device setting (configurable)
+- Theme lock: during an active game, theme stays locked to prevent jarring switches
+
+### Performance
+- Main bundle: 498 KB (161 KB gzipped)
+- Route chunks: 3-17 KB each (lazy-loaded)
+- Puzzle data: ~70-82 KB per difficulty (lazy-loaded, precached)
+- Service worker precaches all chunks and engine for offline
+
+---
+
+## 1. Phase 1 goals (baseline)
+
+
 
 1. Deployed and installable as a PWA, fully playable offline
 2. AI opponent (Stockfish WASM) with difficulty levels

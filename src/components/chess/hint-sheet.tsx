@@ -50,7 +50,7 @@ export function HintSheet({ open, hint, loading, onPlay, onDismiss, opponentName
           )}
         </SheetHeader>
         <SheetFooter className="gap-2 px-4 pb-6">
-          <Button variant="mint" size="lg" disabled={!hint} onClick={onPlay}>
+          <Button variant="win-card" size="lg" disabled={!hint} onClick={onPlay}>
             {hint ? `Play ${hint.san}` : 'Play'}
           </Button>
           <Button variant="outline" size="lg" onClick={onDismiss}>

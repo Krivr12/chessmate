@@ -81,6 +81,8 @@ export type GameState = {
   token: number
 
   newGame: (difficulty: Difficulty, playerColor?: Color) => void
+  /** Start a game from a custom FEN position (for "play from here" in review). */
+  newGameFromFen: (fen: string, difficulty: Difficulty, playerColor?: Color) => void
   /** Opponent and theme of the battle in progress. Read by screens instead of hardcoding the frog. */
   resume: (battle: SavedBattle) => void
   selectSquare: (square: Square) => void
@@ -407,6 +409,38 @@ export const useGameStore = create<GameState>()((set, get) => {
         opponent: opponentForTheme(theme),
         theme,
         startFen: START_FEN,
+        startedAt: Date.now(),
+        moves: [],
+        redo: [],
+        analysis: null,
+        winChance: 50,
+        trend: null,
+        hint: null,
+        outcome: null,
+        commentary: say('gameStart', null, 'idle'),
+      })
+      if (playerColor === 'w') primeAnalysis()
+      else void opponentTurn()
+    },
+
+    newGameFromFen: (fen, difficulty, playerColor = 'w') => {
+      bump()
+      engine.newGame()
+      analysisCache.clear()
+      void clearBattle()
+      // A new battle takes the theme from Settings now, then locks it until the battle ends (D2).
+      useThemeLock.getState().unlock()
+      const theme = resolveTheme(useSettingsStore.getState().theme)
+      useThemeLock.getState().lock(theme)
+      activeLines = OPPONENTS[opponentForTheme(theme)].lines
+      set({
+        ...rebuild(fen, []),
+        phase: playerColor === 'w' ? 'player' : 'opponent',
+        playerColor,
+        difficulty,
+        opponent: opponentForTheme(theme),
+        theme,
+        startFen: fen,
         startedAt: Date.now(),
         moves: [],
         redo: [],

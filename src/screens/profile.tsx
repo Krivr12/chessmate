@@ -225,7 +225,7 @@ export default function Profile() {
 
       {loaded && games.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border p-4 text-sm text-text-secondary">
-          No games yet. Finish a game and it will appear here with your stats.
+          No games yet. Finish one to see your stats here.
         </div>
       )}
 

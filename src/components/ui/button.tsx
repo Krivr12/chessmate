@@ -11,6 +11,8 @@ const buttonVariants = cva(
         default:
           "bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_16px_rgba(159,212,255,0.35)]",
         mint: "bg-mint text-accent-foreground hover:bg-mint/90 hover:shadow-[0_0_16px_rgba(121,242,198,0.35)]",
+        "win-card":
+          "bg-win-card-fill text-win-card hover:brightness-95 hover:shadow-[0_0_16px_rgba(139,90,60,0.35)]",
         outline:
           "border-border bg-transparent text-foreground hover:bg-surface-2 aria-expanded:bg-surface-2",
         secondary:

@@ -17,8 +17,8 @@ export function HintCard({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        'flex min-h-24 flex-col justify-between rounded-2xl bg-mint p-4 text-left text-[#08352d] transition duration-150',
-        'outline-none hover:brightness-105 focus-visible:ring-2 focus-visible:ring-mint focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'flex min-h-24 flex-col justify-between rounded-2xl bg-win-card-fill p-4 text-left text-win-card transition duration-150',
+        'outline-none hover:brightness-95 focus-visible:ring-2 focus-visible:ring-win-card-fill focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         'disabled:cursor-not-allowed disabled:opacity-45',
       )}
     >
