@@ -790,3 +790,129 @@ dialogs, and navigation, and chess-specific variables for board squares,
 legal moves, selection, and check states. This separation will make
 future theme changes much easier while preserving consistent gameplay
 visuals.
+
+---
+
+## 15. Light theme colors
+
+The dark palette in sections 2 to 13 stays the default for the existing screens. This section adds the light theme colors from the light-mode design spec (v1.0, October 2026). Only the color values and their usage are copied here. Typography, layout, and motion rules from that spec are not part of this document.
+
+Light theme direction: warm ivory canvas, rounded white surfaces, orange as the primary action color, yellow for rewards, mint for hints and success, and coral for mistakes. Use each accent for one purpose only.
+
+### 15.1 Core palette
+
+| Token | Hex | Intended use |
+|---|---|---|
+| `color.background` | `#FFFDF8` | Main app and page background |
+| `color.surface` | `#FFFFFF` | Cards, dialogs, navigation surfaces |
+| `color.surface-warm` | `#FFFAF1` | Secondary cards and soft panels |
+| `color.surface-muted` | `#F7F4EE` | Disabled areas, subtle containers |
+| `color.text-primary` | `#202B36` | Headings and body text |
+| `color.text-secondary` | `#66717D` | Supporting text, descriptions |
+| `color.text-muted` | `#929AA3` | Captions, metadata, placeholders |
+| `color.border` | `#EAE6DE` | Card borders, dividers, input outlines |
+| `color.primary` | `#FF6B1A` | Primary buttons, active navigation, key actions |
+| `color.primary-hover` | `#EA570C` | Hover and pressed primary actions |
+| `color.primary-soft` | `#FFF0E3` | Selected states, subtle orange surfaces |
+| `color.yellow` | `#FFD36E` | Rewards, streaks, stars, warm highlights |
+| `color.yellow-soft` | `#FFF4D8` | Reward backgrounds, gentle emphasis |
+| `color.mint` | `#9DECCB` | Hint cards, success accents, positive feedback |
+| `color.mint-strong` | `#28C995` | Progress fills, success indicators |
+| `color.mint-soft` | `#E5FAF1` | Positive message backgrounds |
+| `color.coral` | `#FF8E7C` | Mistakes, loss feedback, warning accents |
+| `color.coral-soft` | `#FFF0EC` | Error and loss panels |
+| `color.blue-soft` | `#B9DDF8` | Optional board theme, secondary information |
+| `color.purple-soft` | `#CBB8F5` | Optional theme selection, rare decorative accent |
+
+### 15.2 Semantic colors
+
+Use these pairs for status messages. Do not use color alone to show move quality or game state. Pair the color with a label, icon, or short explanation.
+
+| Meaning | Foreground | Background |
+|---|---|---|
+| Primary action | `#FFFFFF` on `#FF6B1A` | `#FF6B1A` |
+| Success, good move | `#168A68` | `#E5FAF1` |
+| Hint, suggestion | `#14785F` | `#DDF8EC` |
+| Warning, caution | `#94600A` | `#FFF4D8` |
+| Error, incorrect move | `#C94D3D` | `#FFF0EC` |
+| Neutral information | `#365D7A` | `#EDF6FD` |
+
+### 15.3 Chessboard (light theme)
+
+| Element | Hex |
+|---|---|
+| Light square | `#FFF0D9` |
+| Dark square | `#F5C98D` |
+| Selected square | `#FFE17A` |
+| Last-move highlight | `#FFE8A3` |
+| Legal-move dot | `#29A879` at 55 to 70% opacity |
+| Capture indicator | `#E76F51` |
+| Check highlight | `#FF8E7C` |
+| Coordinate text | `#725B45` |
+
+Piece colors for the light theme: white pieces use fill `#FFFFFF` with outline `#26323D`. Black pieces use fill `#26323D` with a `#FFFFFF` outline where needed for separation.
+
+### 15.4 Component colors
+
+| Component | Token | Hex |
+|---|---|---|
+| Primary button | Background, pressed | `#FF6B1A`, `#EA570C` |
+| Secondary button | Background, border, text | `#FFFFFF`, `#EAE6DE`, `#26323D` |
+| Card | Background, border | `#FFFFFF`, `#EAE6DE` |
+| Easy chip | Background, text | `#DDF8EC`, `#167653` |
+| Medium chip | Background, text | `#FFF0D2`, `#94600A` |
+| Hard chip | Background, text | `#FCE4DF`, `#B84D3D` |
+| Selected filter | Background, text | `#FF6B1A`, `#FFFFFF` |
+| Unselected filter | Background, text | `#F7F4EE`, `#66717D` |
+| Progress track | Track | `#F1EDE6` |
+| Positive progress | Fill | `#28C995` |
+| Primary progress | Fill | `#FF9B36` |
+| Negative result | Fill | `#FF8E7C` |
+| Nav active | Icon and label | `#FF6B1A` |
+| Nav inactive | Icon and label | `#89939D` |
+| Win result trophy | Fill | `#FFB52E` |
+
+### 15.5 Light theme CSS variables
+
+```css
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-background: #FFFDF8;
+  --color-surface: #FFFFFF;
+  --color-surface-warm: #FFFAF1;
+  --color-surface-muted: #F7F4EE;
+  --color-text-primary: #202B36;
+  --color-text-secondary: #66717D;
+  --color-text-muted: #929AA3;
+  --color-border: #EAE6DE;
+  --color-primary: #FF6B1A;
+  --color-primary-hover: #EA570C;
+  --color-primary-soft: #FFF0E3;
+  --color-yellow: #FFD36E;
+  --color-yellow-soft: #FFF4D8;
+  --color-mint: #9DECCB;
+  --color-mint-strong: #28C995;
+  --color-mint-soft: #E5FAF1;
+  --color-coral: #FF8E7C;
+  --color-coral-soft: #FFF0EC;
+  --color-blue-soft: #B9DDF8;
+  --color-purple-soft: #CBB8F5;
+
+  --board-light: #FFF0D9;
+  --board-dark: #F5C98D;
+  --board-selected: #FFE17A;
+  --board-last-move: #FFE8A3;
+  --board-legal-move: #29A879;
+  --board-capture: #E76F51;
+  --board-check: #FF8E7C;
+  --board-coordinates: #725B45;
+}
+```
+
+### 15.6 Contrast notes
+
+- White text on `#FF6B1A` is about 2.9:1 (my calculation). That fails WCAG AA for normal text, including 15 to 16 px bold labels. For button text, a darker fill such as `#C2410C` gives about 5.2:1 with white text. Verify with a contrast checker before choosing the final value.
+- `#EA570C` (hover) with white text is about 3.6:1, which also fails AA for normal text.
+- Text-secondary `#66717D` and text-muted `#929AA3` on the cream background need a checker. Use `#66717D` as the minimum for body copy.
+- Check the mint and yellow chips with their dark text on each surface before shipping.

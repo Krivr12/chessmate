@@ -1,5 +1,6 @@
 import type { Color, PieceSymbol, Square } from 'chess.js'
 import type { Difficulty } from '@/constants'
+import type { OpponentId } from './opponents'
 
 export type { Difficulty }
 
@@ -31,6 +32,10 @@ export type SavedBattle = {
   moves: MoveRecord[]
   playerColor: Color
   difficulty: Difficulty
+  /** Added in Phase 2. Missing in MVP saves, which mean 'frog'. */
+  opponent: OpponentId
+  /** Resolved theme when the battle started. Missing in MVP saves, which mean 'dark'. */
+  theme: 'dark' | 'light'
   startedAt: number
   updatedAt: number
 }

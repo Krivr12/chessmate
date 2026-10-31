@@ -2,6 +2,7 @@ import { Chess } from 'chess.js'
 import { del, get, set } from 'idb-keyval'
 import { DEFAULT_DIFFICULTY } from '@/constants'
 import { isDifficulty } from '@/logic/difficulty'
+import { opponentOrDefault } from '@/logic/opponents'
 import type { Difficulty, SavedBattle } from '@/logic/types'
 
 const BATTLE_KEY = 'battle:current'
@@ -14,6 +15,9 @@ export function parseSavedBattle(raw: unknown): SavedBattle | null {
   const b = raw as Partial<SavedBattle>
   if (b.version !== 1 || typeof b.startFen !== 'string' || !Array.isArray(b.moves)) return null
   if ((b.playerColor !== 'w' && b.playerColor !== 'b') || !isDifficulty(b.difficulty)) return null
+  // Old MVP saves have no opponent or theme fields. They resume as the frog on dark.
+  const opponent = opponentOrDefault(b.opponent)
+  const theme = b.theme === 'light' ? 'light' : 'dark'
   try {
     const game = new Chess(b.startFen)
     for (const m of b.moves) {
@@ -30,6 +34,8 @@ export function parseSavedBattle(raw: unknown): SavedBattle | null {
     moves: b.moves,
     playerColor: b.playerColor,
     difficulty: b.difficulty,
+    opponent,
+    theme,
     startedAt: Number(b.startedAt) || Date.now(),
     updatedAt: Number(b.updatedAt) || Date.now(),
   }

@@ -13,6 +13,7 @@ import { AppHeader } from '@/components/layout/app-header'
 import { ConfirmDialog } from '@/components/layout/confirm-dialog'
 import { ResultScreen } from '@/components/result/result-screen'
 import { DIFFICULTIES } from '@/logic/difficulty'
+import { OPPONENTS } from '@/logic/opponents'
 import { isActivePhase, useGameStore } from '@/store/game-store'
 import { loadBattle, loadDifficulty } from '@/storage/battle-storage'
 
@@ -22,6 +23,7 @@ export default function Game() {
     useShallow((st) => ({
       phase: st.phase,
       difficulty: st.difficulty,
+      opponent: st.opponent,
       playerColor: st.playerColor,
       moves: st.moves,
       redo: st.redo,
@@ -67,6 +69,7 @@ export default function Game() {
   const active = isActivePhase(s.phase)
   const hasPlayerMove = s.moves.some((m) => m.by === 'player')
   const cfg = DIFFICULTIES[s.difficulty]
+  const opponent = OPPONENTS[s.opponent]
 
   const openHint = () => {
     setHintFen(s.fen)
@@ -87,7 +90,7 @@ export default function Game() {
   return (
     <main className="flex flex-1 flex-col gap-4 px-4 pt-2 pb-4">
       <AppHeader
-        title={`vs Frog (${cfg.label})`}
+        title={`vs ${opponent.name} (${cfg.label})`}
         canResign={active}
         onNewGame={() => setNewGameOpen(true)}
         onResign={() => setConfirm('resign')}
@@ -98,7 +101,7 @@ export default function Game() {
         {s.phase === 'player'
           ? 'Your turn'
           : s.phase === 'opponent' || s.phase === 'grading'
-            ? 'Frog is thinking'
+            ? `${opponent.name} is thinking`
             : ''}
       </p>
       <MoveToolbar
@@ -122,9 +125,11 @@ export default function Game() {
         loading={s.hintLoading}
         onPlay={playHint}
         onDismiss={closeHint}
+        opponentName={opponent.name}
       />
       <NewGameSheet
         open={newGameOpen}
+        opponent={s.opponent}
         onOpenChange={setNewGameOpen}
         onPlay={(difficulty, color) => {
           setNewGameOpen(false)
@@ -143,7 +148,7 @@ export default function Game() {
         open={confirm === 'resign'}
         onOpenChange={(o) => !o && setConfirm(null)}
         title="Resign?"
-        description="The frog will never let you forget it."
+        description={`The ${opponent.name.toLowerCase()} will never let you forget it.`}
         confirmLabel="Resign"
         destructive
         onConfirm={actions.resign}
@@ -154,6 +159,7 @@ export default function Game() {
           <ResultScreen
             key="result"
             outcome={s.outcome}
+            opponent={s.opponent}
             moves={s.moves}
             onPlayAgain={() => actions.newGame(s.difficulty, s.playerColor)}
             onHome={() => navigate('/')}

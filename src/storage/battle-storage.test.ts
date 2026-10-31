@@ -19,6 +19,8 @@ const battle: SavedBattle = {
   ],
   playerColor: 'w',
   difficulty: 'medium',
+  opponent: 'frog',
+  theme: 'dark',
   startedAt: 1,
   updatedAt: 2,
 }
@@ -42,5 +44,17 @@ describe('battle storage', () => {
       parseSavedBattle({ ...battle, moves: [{ from: 'e2', to: 'e5', san: 'e5', by: 'player' }] }),
     ).toBeNull()
     expect(parseSavedBattle({ ...battle, moves: [{ ...battle.moves[0], grade: 'brilliant' }] })).toBeNull()
+  })
+})
+
+describe('legacy saves (MVP, before opponent and theme existed)', () => {
+  it('load as the frog on the dark theme', () => {
+    const legacy: Partial<SavedBattle> = { ...battle }
+    delete legacy.opponent
+    delete legacy.theme
+    const parsed = parseSavedBattle(legacy)
+    expect(parsed).not.toBeNull()
+    expect(parsed?.opponent).toBe('frog')
+    expect(parsed?.theme).toBe('dark')
   })
 })

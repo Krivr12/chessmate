@@ -1,6 +1,9 @@
 import { Chess, type Color, type Move, type Square } from 'chess.js'
 import { create } from 'zustand'
 import { DEFAULT_DIFFICULTY } from '@/constants'
+import { opponentForTheme, opponentOrDefault, type OpponentId } from '@/logic/opponents'
+import { useSettingsStore } from '@/store/settings-store'
+import { resolveTheme, type ResolvedTheme } from '@/store/theme'
 import { EngineCancelledError, engine, type EngineStatus } from '@/engine/engine-service'
 import { applyMove, initialPieces, type PieceState } from '@/logic/board-pieces'
 import { gradeMove } from '@/logic/grade-move'
@@ -29,6 +32,9 @@ export type GameState = {
   phase: Phase
   playerColor: Color
   difficulty: Difficulty
+  opponent: OpponentId
+  /** Theme locked for this battle (the theme decides the opponent, D1/D2). */
+  theme: ResolvedTheme
   startFen: string
   startedAt: number
   moves: MoveRecord[]
@@ -50,6 +56,7 @@ export type GameState = {
   token: number
 
   newGame: (difficulty: Difficulty, playerColor?: Color) => void
+  /** Opponent and theme of the battle in progress. Read by screens instead of hardcoding the frog. */
   resume: (battle: SavedBattle) => void
   selectSquare: (square: Square) => void
   playerMove: (from: Square, to: Square) => boolean
@@ -272,6 +279,8 @@ export const useGameStore = create<GameState>()((set, get) => {
     phase: 'idle',
     playerColor: 'w',
     difficulty: DEFAULT_DIFFICULTY,
+    opponent: 'frog',
+    theme: 'dark',
     startFen: START_FEN,
     startedAt: 0,
     moves: [],
@@ -298,11 +307,15 @@ export const useGameStore = create<GameState>()((set, get) => {
       analysisCache.clear()
       saveDifficulty(difficulty)
       void clearBattle()
+      // The theme is locked for the whole battle. Settings cannot change it until the battle ends.
+      const theme = resolveTheme(useSettingsStore.getState().theme)
       set({
         ...rebuild(START_FEN, []),
         phase: playerColor === 'w' ? 'player' : 'opponent',
         playerColor,
         difficulty,
+        opponent: opponentForTheme(theme),
+        theme,
         startFen: START_FEN,
         startedAt: Date.now(),
         moves: [],
@@ -327,6 +340,8 @@ export const useGameStore = create<GameState>()((set, get) => {
         ...rebuild(battle.startFen, battle.moves),
         playerColor: battle.playerColor,
         difficulty: battle.difficulty,
+        opponent: opponentOrDefault(battle.opponent),
+        theme: battle.theme === 'light' ? 'light' : 'dark',
         startFen: battle.startFen,
         startedAt: battle.startedAt,
         moves: battle.moves,
@@ -495,6 +510,8 @@ export function toSavedBattle(s: GameState): SavedBattle {
     moves: s.moves,
     playerColor: s.playerColor,
     difficulty: s.difficulty,
+    opponent: s.opponent,
+    theme: s.theme,
     startedAt: s.startedAt,
     updatedAt: Date.now(),
   }

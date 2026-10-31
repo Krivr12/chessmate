@@ -20,9 +20,10 @@ type HintSheetProps = {
   loading: boolean
   onPlay: () => void
   onDismiss: () => void
+  opponentName: string
 }
 
-export function HintSheet({ open, hint, loading, onPlay, onDismiss }: HintSheetProps) {
+export function HintSheet({ open, hint, loading, onPlay, onDismiss, opponentName }: HintSheetProps) {
   return (
     // Non-modal so the board (and the pulsing hint squares) stay visible above the sheet.
     <Sheet open={open} modal={false} onOpenChange={(o) => !o && onDismiss()}>
@@ -45,7 +46,7 @@ export function HintSheet({ open, hint, loading, onPlay, onDismiss }: HintSheetP
               <SheetDescription>{hint.reason}</SheetDescription>
             </>
           ) : (
-            <SheetDescription>The frog is not ready yet. Try again in a moment.</SheetDescription>
+            <SheetDescription>{opponentName} is not ready yet. Try again in a moment.</SheetDescription>
           )}
         </SheetHeader>
         <SheetFooter className="gap-2 px-4 pb-6">

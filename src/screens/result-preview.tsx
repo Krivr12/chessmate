@@ -59,6 +59,7 @@ export default function ResultPreview() {
       <ResultScreen
         key={key}
         outcome={outcome}
+        opponent="frog"
         moves={SAMPLE_MOVES}
         onPlayAgain={() => navigate(`/preview/result/${key}`, { replace: true })}
         onHome={() => navigate('/')}

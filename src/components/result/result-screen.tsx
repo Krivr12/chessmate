@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
+import { OPPONENTS, type OpponentId } from '@/logic/opponents'
 import type { MoveRecord, Outcome } from '@/logic/types'
 import { GameSummaryCard } from './game-summary-card'
 import { DrawArt, SadKingArt, TrophyArt } from './illustrations'
@@ -11,7 +12,7 @@ const CONTENT = {
   win: {
     art: TrophyArt,
     heading: 'You Win!',
-    message: 'Sharp play. The frog is not amused.',
+    message: (opponent: string) => `Sharp play. ${opponent} is not amused.`,
     primary: 'Play again',
     variant: 'mint' as const,
     headingClass: '',
@@ -45,15 +46,17 @@ const CONTENT = {
 
 type ResultScreenProps = {
   outcome: Outcome
+  opponent: OpponentId
   moves: MoveRecord[]
   onPlayAgain: () => void
   onHome: () => void
 }
 
 /** Full-screen result state of the Game page (README §6.5). */
-export function ResultScreen({ outcome, moves, onPlayAgain, onHome }: ResultScreenProps) {
+export function ResultScreen({ outcome, opponent, moves, onPlayAgain, onHome }: ResultScreenProps) {
   const reduceMotion = useReducedMotion()
   const c = CONTENT[outcome.result]
+  const opponentName = OPPONENTS[opponent].name
   const headingRef = useRef<HTMLHeadingElement>(null)
   useEffect(() => headingRef.current?.focus(), [])
   const ease = [0.16, 1, 0.3, 1] as const
@@ -90,7 +93,7 @@ export function ResultScreen({ outcome, moves, onPlayAgain, onHome }: ResultScre
             {c.heading}
           </h2>
           <p className="text-sm text-text-secondary">
-            {outcome.reason}. {c.message}
+            {outcome.reason}. {typeof c.message === 'string' ? c.message : c.message(opponentName)}
           </p>
         </div>
         <GameSummaryCard moves={moves} reduceMotion={reduceMotion} barClassName={c.barClass} />

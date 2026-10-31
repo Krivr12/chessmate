@@ -99,6 +99,8 @@ describe('game store', () => {
       ],
       playerColor: 'w',
       difficulty: 'hard',
+      opponent: 'frog',
+      theme: 'dark',
       startedAt: 1,
       updatedAt: 2,
     })

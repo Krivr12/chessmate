@@ -1,15 +1,44 @@
-import { useRef, useState, type KeyboardEvent } from 'react'
-import type { Square } from 'chess.js'
+import { useId, useRef, useState, type KeyboardEvent } from 'react'
+import type { Color, Square } from 'chess.js'
 import { AnimatePresence, motion } from 'motion/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
 import { cn } from '@/lib/utils'
-import { PIECE_NAMES } from '@/logic/board-pieces'
+import { initialPieces, PIECE_NAMES, type PieceState } from '@/logic/board-pieces'
 import { useGameStore } from '@/store/game-store'
 import { PieceSvg } from './pieces'
 
 const FILES = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const SPRING = { type: 'spring', stiffness: 400, damping: 32 } as const
+const DEFAULT_ARROW_COLOR = '#FF8F93'
+
+export type BoardArrow = { from: Square; to: Square; color?: string }
+
+export type ChessboardProps = {
+  /** Show this position instead of the live game. Board becomes read-only. */
+  fen?: string
+  /** Disable moves. The live position still shows when no `fen` is given. */
+  readOnly?: boolean
+  /** Side at the bottom of the board. Defaults to the player's color. */
+  orientation?: Color
+  /** Square tints, for example `{ e4: '#FFE17A' }`. */
+  highlights?: Partial<Record<Square, string>>
+  /** Arrows drawn over the board (for example the engine's better move). */
+  arrows?: BoardArrow[]
+}
+
+/** The subset of game state the board renders. */
+type BoardView = {
+  pieces: PieceState[]
+  selected: Square | null
+  legalTargets: Square[]
+  lastMove: { from: Square; to: Square } | null
+  checkSquare: Square | null
+  hint: { from: Square; to: Square } | null
+  playerColor: Color
+  phase: string
+  selectSquare: (square: Square) => void
+}
 
 /** Visual column/row (0..7, top-left origin) for a square, given orientation. */
 function toGrid(square: Square, flipped: boolean) {
@@ -24,8 +53,22 @@ function fromGrid(col: number, row: number, flipped: boolean): Square {
   return `${FILES[file]}${rank + 1}` as Square
 }
 
-export function Chessboard() {
-  const s = useGameStore(
+/** A static view: no selection, no last-move or check overlays, and no clicks. */
+function readOnlyView(live: BoardView, fen?: string): BoardView {
+  return {
+    ...live,
+    pieces: fen ? initialPieces(fen) : live.pieces,
+    selected: null,
+    legalTargets: [],
+    lastMove: null,
+    checkSquare: null,
+    hint: null,
+    selectSquare: () => {},
+  }
+}
+
+export function Chessboard({ fen, readOnly = false, orientation, highlights, arrows = [] }: ChessboardProps = {}) {
+  const live = useGameStore(
     useShallow((st) => ({
       pieces: st.pieces,
       selected: st.selected,
@@ -38,14 +81,24 @@ export function Chessboard() {
       selectSquare: st.selectSquare,
     })),
   )
+  const s = readOnly || fen !== undefined ? readOnlyView(live, fen) : live
   const reduceMotion = useReducedMotion()
-  const flipped = s.playerColor === 'b'
+  const flipped = (orientation ?? s.playerColor) === 'b'
   const [focusSquare, setFocusSquare] = useState<Square>(flipped ? 'e7' : 'e2')
   const refs = useRef(new Map<Square, HTMLButtonElement>())
+  const markerBase = useId().replace(/:/g, '')
 
   const onBoard = s.pieces.filter((p) => p.square !== null)
   const bySquare = new Map(onBoard.map((p) => [p.square as Square, p]))
-  const locked = s.phase !== 'player'
+  const locked = readOnly || fen !== undefined || s.phase !== 'player'
+
+  // One arrowhead marker per color, so every arrow keeps its own tint.
+  const arrowColors = [...new Set(arrows.map((a) => a.color ?? DEFAULT_ARROW_COLOR))]
+  const markerId = (color: string) => `${markerBase}-${arrowColors.indexOf(color)}`
+  const center = (sq: Square) => {
+    const { col, row } = toGrid(sq, flipped)
+    return { x: col + 0.5, y: row + 0.5 }
+  }
 
   const onKeyDown = (e: KeyboardEvent, square: Square) => {
     const delta: Record<string, [number, number]> = {
@@ -87,6 +140,7 @@ export function Chessboard() {
           const isTarget = s.legalTargets.includes(sq)
           const isLast = s.lastMove?.from === sq || s.lastMove?.to === sq
           const isHint = s.hint?.from === sq || s.hint?.to === sq
+          const tint = highlights?.[sq]
           const label = [
             sq,
             piece ? `${piece.color === 'w' ? 'white' : 'black'} ${PIECE_NAMES[piece.type]}` : 'empty',
@@ -94,6 +148,7 @@ export function Chessboard() {
             isTarget && (piece ? 'capture' : 'legal move'),
             s.checkSquare === sq && 'in check',
             isHint && 'hint',
+            tint && 'highlighted',
           ]
             .filter(Boolean)
             .join(', ')
@@ -116,6 +171,7 @@ export function Chessboard() {
                 isLight ? 'bg-board-light' : 'bg-board-dark',
               )}
             >
+              {tint && <span className="absolute inset-0" style={{ backgroundColor: tint, opacity: 0.55 }} />}
               {isLast && <span className="absolute inset-0 bg-board-last-move/75" />}
               {s.selected === sq && <span className="absolute inset-0 bg-board-selected/90" />}
               {s.checkSquare === sq && (
@@ -175,6 +231,50 @@ export function Chessboard() {
           })}
         </AnimatePresence>
       </div>
+
+      {arrows.length > 0 && (
+        <svg
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          viewBox="0 0 8 8"
+          aria-hidden="true"
+        >
+          <defs>
+            {arrowColors.map((color) => (
+              <marker
+                key={color}
+                id={markerId(color)}
+                viewBox="0 0 10 10"
+                refX="6"
+                refY="5"
+                markerWidth="0.4"
+                markerHeight="0.4"
+                orient="auto"
+              >
+                <path d="M0,0 L10,5 L0,10 z" fill={color} />
+              </marker>
+            ))}
+          </defs>
+          {arrows.map((a, i) => {
+            const from = center(a.from)
+            const to = center(a.to)
+            const color = a.color ?? DEFAULT_ARROW_COLOR
+            return (
+              <line
+                key={`${a.from}-${a.to}-${i}`}
+                x1={from.x}
+                y1={from.y}
+                x2={to.x}
+                y2={to.y}
+                stroke={color}
+                strokeWidth={0.16}
+                strokeLinecap="round"
+                opacity={0.9}
+                markerEnd={`url(#${markerId(color)})`}
+              />
+            )
+          })}
+        </svg>
+      )}
     </div>
   )
 }

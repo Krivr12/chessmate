@@ -1,17 +1,13 @@
-import { useEffect, useState } from 'react'
-import type { Color } from 'chess.js'
+import { useEffect } from 'react'
 import { ArrowRight } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { KnightLogo } from '@/components/chess/knight-logo'
-import { NewGameSheet } from '@/components/chess/new-game-sheet'
 import { Button } from '@/components/ui/button'
 import { APP_NAME, APP_TAGLINE } from '@/constants'
 import { preloadEngine } from '@/engine/engine-service'
 import { useReducedMotion } from '@/hooks/use-reduced-motion'
-import type { Difficulty } from '@/logic/types'
-import { loadBattle } from '@/storage/battle-storage'
-import { isActivePhase, useGameStore } from '@/store/game-store'
+import { META_KEYS, setMeta } from '@/storage/meta'
 
 /** Faint geometric shapes behind the content. Purely decorative. */
 function BackgroundShapes() {
@@ -50,36 +46,25 @@ function BackgroundShapes() {
   )
 }
 
+/**
+ * First-launch welcome (D3). Shown only until the user taps Start.
+ * Start records that the welcome was seen and opens Home. Resume lives on Home.
+ */
 export default function Landing() {
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
 
-  const [newGameOpen, setNewGameOpen] = useState(false)
-  const inMemory = useGameStore((st) => isActivePhase(st.phase))
-  const [savedOnDisk, setSavedOnDisk] = useState(false)
-  const hasSavedBattle = inMemory || savedOnDisk
-
   useEffect(() => {
     preloadEngine()
-    let cancelled = false
-    void loadBattle().then((b) => !cancelled && setSavedOnDisk(b !== null))
-    return () => {
-      cancelled = true
-    }
   }, [])
 
-  const resume = async () => {
-    if (!inMemory) {
-      const saved = await loadBattle()
-      if (saved) useGameStore.getState().resume(saved)
+  const start = async () => {
+    try {
+      await setMeta(META_KEYS.hasSeenWelcome, true)
+    } catch {
+      // If the flag cannot be saved, the welcome shows again next launch. That is acceptable.
     }
-    navigate('/play')
-  }
-
-  const start = (difficulty: Difficulty, color: Color) => {
-    setNewGameOpen(false)
-    useGameStore.getState().newGame(difficulty, color)
-    navigate('/play')
+    navigate('/home', { replace: true })
   }
 
   return (
@@ -127,17 +112,11 @@ export default function Landing() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: reduceMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}
       >
-        {hasSavedBattle && (
-          <Button variant="outline" size="lg" className="w-full" onClick={() => void resume()}>
-            Resume battle
-          </Button>
-        )}
-        <Button size="lg" className="w-full" onClick={() => setNewGameOpen(true)}>
+        <Button size="lg" className="w-full" onClick={() => void start()}>
           Start
           <ArrowRight data-icon="inline-end" strokeWidth={1.8} aria-hidden="true" />
         </Button>
       </motion.div>
-      <NewGameSheet open={newGameOpen} onOpenChange={setNewGameOpen} onPlay={start} />
     </main>
   )
 }
