@@ -4,9 +4,11 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  ChevronRight as ChevronRightIcon,
   CircleCheck,
   CircleX,
   House,
+  Info,
   Lightbulb,
   Pause,
   Play,
@@ -16,11 +18,9 @@ import {
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 import { BoardSurface, type BoardView } from '@/components/chess/chessboard'
-import { OpponentAvatar } from '@/components/opponent/opponent-avatar'
 import { Button } from '@/components/ui/button'
 import { piecesFromMoves } from '@/logic/board-pieces'
 import { checkSquareOf, NO_SELECTION, tapSquare, type Selection } from '@/logic/board-input'
-import { OPPONENTS, opponentForTheme } from '@/logic/opponents'
 import {
   attemptPuzzleMove,
   hintSquares,
@@ -34,17 +34,14 @@ import {
   type PuzzleStatus,
 } from '@/logic/puzzle-flow'
 import {
-  LEVEL_LABEL,
   findPuzzle,
   loadFiltered,
   puzzleThemeLabel,
   type PuzzleEntry,
   type PuzzleFilter,
 } from '@/logic/puzzle-library'
-import { pickLine, type TalkCategory } from '@/logic/trash-talk'
-import type { Mood } from '@/logic/types'
+import { getPuzzleGoal, puzzleProgressSegments } from '@/logic/puzzle-goal'
 import { recordPuzzleAttempt, solvedPuzzleIds } from '@/storage/puzzles'
-import { useEffectiveTheme } from '@/store/theme'
 import { cn } from '@/lib/utils'
 
 const OPPONENT_DELAY_MS = 600
@@ -90,40 +87,49 @@ export default function PuzzlePlay() {
   return <PuzzleSession key={puzzleId} puzzle={loaded.puzzle} filter={filter} />
 }
 
-type Line = { text: string; mood: Mood }
-
 function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: PuzzleFilter }) {
   const navigate = useNavigate()
-  const theme = useEffectiveTheme()
-  const opponent = OPPONENTS[opponentForTheme(theme)]
 
   const [state, setState] = useState<PuzzleState>(() => startPuzzle(puzzle))
   const [selection, setSelection] = useState<Selection>(NO_SELECTION)
   const [promoting, setPromoting] = useState<{ from: Square; to: Square } | null>(null)
   const [attempt, setAttempt] = useState(1)
-  const [line, setLine] = useState<Line>({ text: '', mood: 'idle' })
+  const [statusPill, setStatusPill] = useState('Move 1 of...')
   const [viewing, setViewing] = useState(false)
   const [step, setStep] = useState(0)
   const [autoPlay, setAutoPlay] = useState(false)
   const [finished, setFinished] = useState(false)
-  const [startedAt, setStartedAt] = useState(() => Date.now())
+  const [startedAt, setStartedAt] = useState<number | null>(null)
+  const [completedMoves, setCompletedMoves] = useState(0)
+  const [hintState, setHintState] = useState<'idle' | 'piece' | 'destination'>('idle')
   const recordedFor = useRef(0)
 
+  // Mission text computed once, never changes during the puzzle
+  const goal = useMemo(() => getPuzzleGoal(puzzle.themes, state.playerColor), [puzzle.id, state.playerColor])
   const steps = useMemo(() => solutionSteps(puzzle), [puzzle])
   const bestSan = steps.find((s) => s.by === 'player')?.san ?? ''
   const wrongSan = state.wrongSan
+  const totalSegments = puzzleProgressSegments(puzzle.moves.length)
 
   // The opponent answers after a short pause, so the player can follow the position.
   useEffect(() => {
     if (state.status !== 'opponent') return
-    const t = setTimeout(() => setState((s) => playOpponentMove(puzzle, s)), OPPONENT_DELAY_MS)
+    const t = setTimeout(() => {
+      setState((s) => playOpponentMove(puzzle, s))
+      // Start timer when opponent's first move finishes and player can move
+      if (state.index === 0 && !startedAt) {
+        setStartedAt(Date.now())
+        setStatusPill(`Move 1 of ${totalSegments}`)
+      }
+    }, OPPONENT_DELAY_MS)
     return () => clearTimeout(t)
-  }, [state.status, state.index, puzzle])
+  }, [state.status, state.index, puzzle, startedAt, totalSegments])
 
   // Save each finished attempt once. A solved puzzle stays solved; a failed one is kept as a retry.
   useEffect(() => {
     if (state.status !== 'solved' && state.status !== 'failed') return
     if (recordedFor.current === attempt) return
+    if (!startedAt) return // Don't record if timer never started
     recordedFor.current = attempt
     void recordPuzzleAttempt(puzzle.id, {
       solved: state.status === 'solved',
@@ -142,19 +148,28 @@ function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: Puzzle
     return () => clearTimeout(t)
   }, [viewing, autoPlay, step, steps.length])
 
-  const say = (category: TalkCategory, mood: Mood) =>
-    setLine({ text: pickLine(category, Math.random, opponent.lines), mood })
-
   const applyAttempt = (r: AttemptResult) => {
     if (r.kind === 'correct') {
       setState(r.state)
       setSelection(NO_SELECTION)
-      if (r.state.status === 'solved') say('puzzleSolved', 'happy')
-      else say('puzzleCorrect', 'happy')
+      const newCompleted = completedMoves + 1
+      setCompletedMoves(newCompleted)
+      // Reset hint state after successful move
+      setHintState('idle')
+      
+      if (r.state.status === 'solved') {
+        setStatusPill('Solved')
+      } else {
+        // Briefly show "Nice move!" then update to next move number
+        setStatusPill('Nice move!')
+        setTimeout(() => {
+          setStatusPill(`Move ${newCompleted + 1} of ${totalSegments}`)
+        }, 1000)
+      }
     } else if (r.kind === 'wrong') {
       setState(r.state)
       setSelection(NO_SELECTION)
-      say('puzzleWrong', 'sad')
+      setStatusPill('Not quite')
     }
   }
 
@@ -182,20 +197,29 @@ function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: Puzzle
 
   const onHint = () => {
     if (state.status !== 'playing') return
-    setState(requestHint(state))
-    say('hintUsed', 'happy')
+    const newState = requestHint(state)
+    setState(newState)
+    
+    if (newState.hintLevel === 1) {
+      setHintState('piece')
+    } else if (newState.hintLevel === 2) {
+      setHintState('destination')
+    }
   }
 
   const restart = () => {
-    setStartedAt(Date.now())
+    setStartedAt(Date.now()) // Start timer immediately on restart
     setAttempt((n) => n + 1)
-    setState(startPuzzle(puzzle))
+    const newState = startPuzzle(puzzle)
+    setState(newState)
     setSelection(NO_SELECTION)
     setPromoting(null)
     setViewing(false)
     setStep(0)
     setAutoPlay(false)
-    setLine({ text: '', mood: 'idle' })
+    setCompletedMoves(0)
+    setHintState('idle')
+    setStatusPill(`Move 1 of ${totalSegments}`)
   }
 
   const goNext = async () => {
@@ -243,10 +267,7 @@ function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: Puzzle
     cancelPromotion: () => setPromoting(null),
   }
 
-  const opponentTurn = state.status === 'opponent'
   const finishedAttempt = state.status === 'solved' || state.status === 'failed'
-  const mood: Mood = opponentTurn ? 'think' : line.mood
-  const text = opponentTurn ? 'Let me think...' : line.text
   const playing = autoPlay && step < steps.length
 
   if (finished) {
@@ -275,17 +296,40 @@ function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: Puzzle
         <span className="w-10" aria-hidden="true" />
       </header>
 
-      <section className="flex items-start gap-3" aria-label="Opponent">
-        <div className="relative size-14 shrink-0 rounded-2xl border border-border bg-surface-2 p-1">
-          <OpponentAvatar opponent={opponent.id} mood={mood} className="h-full w-full" />
+      {/* Status pill */}
+      <div className="flex items-center justify-center">
+        <div
+          className="rounded-full bg-surface-secondary px-3 py-1 text-xs font-medium text-text-secondary"
+          role="status"
+          aria-live="polite"
+        >
+          {statusPill}
         </div>
-        <div className="min-h-14 flex-1 rounded-2xl rounded-tl-sm border border-border bg-card px-3 py-2.5">
-          <p className="text-sm text-text-primary" aria-live="polite">
-            {viewing ? 'Watch the solution. Step through it at your pace.' : text}
-          </p>
-        </div>
-      </section>
+      </div>
 
+      {/* Progress bar */}
+      <div
+        className="flex gap-1"
+        role="progressbar"
+        aria-label="Puzzle progress"
+        aria-valuemin={1}
+        aria-valuemax={totalSegments}
+        aria-valuenow={completedMoves + 1}
+      >
+        {Array.from({ length: totalSegments }).map((_, i) => {
+          let segmentClass = 'bg-muted'
+          if (finishedAttempt && state.status === 'solved') {
+            segmentClass = 'bg-mint'
+          } else if (finishedAttempt && state.status === 'failed' && i === completedMoves) {
+            segmentClass = 'bg-coral'
+          } else if (i < completedMoves) {
+            segmentClass = 'bg-mint'
+          }
+          return <span key={i} className={cn('h-1.5 flex-1 rounded-full', segmentClass)} />
+        })}
+      </div>
+
+      {/* Chessboard */}
       <BoardSurface
         view={view}
         flipped={state.playerColor === 'b'}
@@ -304,22 +348,8 @@ function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: Puzzle
         label={`Puzzle ${puzzle.id} board`}
       />
 
-      <section
-        className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3"
-        aria-label="Puzzle information"
-      >
-        <div className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-semibold text-text-primary">{puzzleThemeLabel(puzzle)}</span>
-          <span className="text-xs text-text-secondary">
-            Rating {puzzle.rating} · {LEVEL_LABEL[puzzle.level]}
-          </span>
-        </div>
-        <span className="text-xs text-text-secondary">
-          {state.playerColor === 'w' ? 'You play White' : 'You play Black'}
-        </span>
-      </section>
-
       {viewing ? (
+        /* Solution viewer replaces mission/hint cards */
         <SolutionViewer
           steps={steps}
           step={step}
@@ -338,6 +368,7 @@ function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: Puzzle
           }}
         />
       ) : finishedAttempt ? (
+        /* Result card replaces mission/hint cards */
         <ResultCard
           status={state.status}
           bestSan={bestSan}
@@ -348,23 +379,57 @@ function PuzzleSession({ puzzle, filter }: { puzzle: PuzzleEntry; filter: Puzzle
           onHome={() => navigate('/home')}
         />
       ) : (
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-2">
-          <Button variant="outline" size="icon" onClick={restart} aria-label="Restart puzzle">
-            <RotateCcw strokeWidth={1.8} aria-hidden="true" />
-          </Button>
-          <Button
-            variant="outline"
+        <>
+          {/* Mission card */}
+          <div className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center gap-2">
+              <Info className="size-5 shrink-0 text-primary" strokeWidth={1.8} aria-hidden="true" />
+              <h2 className="text-sm font-semibold text-text-primary">Mission</h2>
+            </div>
+            <p className="text-sm text-text-secondary">{goal.body}</p>
+          </div>
+
+          {/* Hint card */}
+          <button
+            type="button"
             onClick={onHint}
             disabled={state.status !== 'playing' || state.hintLevel === 2}
+            className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            aria-label={hintState === 'idle' ? 'Get hint' : hintState === 'piece' ? 'Show destination square' : 'Hint used'}
           >
-            <Lightbulb strokeWidth={1.8} aria-hidden="true" />
-            {state.hintLevel === 1 ? 'Show square' : 'Hint'}
-          </Button>
-          <Button variant="outline" onClick={goNext}>
-            <SkipForward strokeWidth={1.8} aria-hidden="true" />
-            Skip
-          </Button>
-        </div>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Lightbulb className="size-5 shrink-0 text-primary" strokeWidth={1.8} aria-hidden="true" />
+                <h2 className="text-sm font-semibold text-text-primary">Hint</h2>
+              </div>
+              {hintState === 'idle' && (
+                <ChevronRightIcon className="size-4 shrink-0 text-text-tertiary" strokeWidth={1.8} aria-hidden="true" />
+              )}
+            </div>
+            <p className="text-sm text-text-secondary">
+              {hintState === 'idle'
+                ? 'Tap to reveal which piece to move'
+                : hintState === 'piece'
+                  ? 'Tap again to see where it goes'
+                  : 'All hints used'}
+            </p>
+          </button>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Bottom actions */}
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" onClick={restart}>
+              <RotateCcw strokeWidth={1.8} aria-hidden="true" />
+              Restart
+            </Button>
+            <Button variant="outline" onClick={goNext}>
+              <SkipForward strokeWidth={1.8} aria-hidden="true" />
+              Skip
+            </Button>
+          </div>
+        </>
       )}
     </main>
   )

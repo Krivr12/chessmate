@@ -1,16 +1,15 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { PieceSymbol, Square } from 'chess.js'
 import { ArrowLeft, CircleCheck, CircleX, Lightbulb, Pause, Play, RotateCcw } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { BoardSurface, type BoardView } from '@/components/chess/chessboard'
-import { OpponentAvatar } from '@/components/opponent/opponent-avatar'
+import { CoachBubble } from '@/components/opponent/coach-bubble'
 import { Button } from '@/components/ui/button'
 import { lessonById } from '@/content/learn'
 import { attemptMove, checkSquareOf, NO_SELECTION, tapSquare, type Selection } from '@/logic/board-input'
 import { initialPieces, piecesFromMoves } from '@/logic/board-pieces'
 import { boardFenAt, type DemoStep, type Lesson, type LessonStep, type LessonProgress, type QuizStep, type TryStep } from '@/logic/learn'
 import { OPPONENTS, opponentForTheme } from '@/logic/opponents'
-import type { Mood } from '@/logic/types'
 import { cn } from '@/lib/utils'
 import { listLessonProgress, saveLessonStep } from '@/storage/lessons'
 import { useEffectiveTheme } from '@/store/theme'
@@ -154,20 +153,6 @@ function LessonSession({ lesson }: { lesson: Lesson }) {
 }
 
 /** Speech bubble with the animal narrating the step. */
-function Bubble({ opponent, mood, title, children }: { opponent: 'frog' | 'cat'; mood: Mood; title?: string; children: ReactNode }) {
-  return (
-    <section className="flex items-start gap-3" aria-label="Narrator">
-      <div className="size-14 shrink-0 rounded-2xl border border-border bg-surface-2 p-1">
-        <OpponentAvatar opponent={opponent} mood={mood} className="h-full w-full" />
-      </div>
-      <div className="flex-1 rounded-2xl rounded-tl-sm border border-border bg-card px-3 py-2.5">
-        {title && <h2 className="mb-1 text-sm font-semibold text-text-primary">{title}</h2>}
-        <div className="text-sm text-text-primary">{children}</div>
-      </div>
-    </section>
-  )
-}
-
 function NextButton({ onClick, isLast, disabled = false }: { onClick: () => void; isLast: boolean; disabled?: boolean }) {
   return (
     <Button size="lg" onClick={onClick} disabled={disabled}>
@@ -179,9 +164,9 @@ function NextButton({ onClick, isLast, disabled = false }: { onClick: () => void
 function TextPanel({ step, opponent, onNext, isLast }: { step: LessonStep & { type: 'text' }; opponent: 'frog' | 'cat'; onNext: () => void; isLast: boolean }) {
   return (
     <>
-      <Bubble opponent={opponent} mood="idle" title={step.title}>
+      <CoachBubble opponent={opponent} mood="idle" title={step.title}>
         {step.body}
-      </Bubble>
+      </CoachBubble>
       <div className="mt-auto">
         <NextButton onClick={onNext} isLast={isLast} />
       </div>
@@ -212,9 +197,9 @@ function DemoPanel({ step, opponent, onNext, isLast }: { step: DemoStep; opponen
 
   return (
     <>
-      <Bubble opponent={opponent} mood={playing ? 'think' : 'idle'} title={step.title}>
+      <CoachBubble opponent={opponent} mood={playing ? 'think' : 'idle'} title={step.title}>
         {step.body}
-      </Bubble>
+      </CoachBubble>
       <BoardSurface
         view={view}
         flipped={false}
@@ -310,9 +295,9 @@ function TryPanel({ step, opponent, onNext, isLast }: { step: TryStep; opponent:
 
   return (
     <>
-      <Bubble opponent={opponent} mood={status === 'right' ? 'happy' : status === 'wrong' ? 'sad' : 'idle'} title={step.title}>
+      <CoachBubble opponent={opponent} mood={status === 'right' ? 'happy' : status === 'wrong' ? 'sad' : 'idle'} title={step.title}>
         {step.body}
-      </Bubble>
+      </CoachBubble>
       <BoardSurface view={view} flipped={color === 'b'} label="Practice board" />
       <div className="min-h-12 text-sm" aria-live="polite">
         {status === 'right' && (
@@ -353,9 +338,9 @@ function QuizPanel({ step, opponent, onNext, isLast }: { step: QuizStep; opponen
   const correct = picked === step.answer
   return (
     <>
-      <Bubble opponent={opponent} mood={picked === null ? 'idle' : correct ? 'happy' : 'sad'} title="Quick check">
+      <CoachBubble opponent={opponent} mood={picked === null ? 'idle' : correct ? 'happy' : 'sad'} title="Quick check">
         {step.question}
-      </Bubble>
+      </CoachBubble>
       <div role="group" aria-label="Answers" className="flex flex-col gap-2">
         {step.options.map((opt, i) => (
           <Button

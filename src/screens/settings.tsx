@@ -135,6 +135,20 @@ export default function Settings() {
             />
           }
         />
+        {/* Hidden: Puzzle intro feature disabled */}
+        {/* 
+        <Row
+          label="Show puzzle intro"
+          note="Show a goal sheet at the start of each puzzle."
+          control={
+            <Switch
+              aria-label="Show puzzle intro"
+              checked={settings.showPuzzleIntro}
+              onCheckedChange={(v) => settings.update({ showPuzzleIntro: v })}
+            />
+          }
+        />
+        */}
         <Row
           label="Highlight last move"
           control={

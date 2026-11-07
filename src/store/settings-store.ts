@@ -11,6 +11,7 @@ export type Settings = {
   sound: boolean
   haptics: boolean
   showHints: boolean
+  showPuzzleIntro: boolean
   highlightLastMove: boolean
   defaultDifficulty: Difficulty
   defaultColor: DefaultColor
@@ -21,6 +22,7 @@ export const DEFAULT_SETTINGS: Settings = {
   sound: false, // stays off until M22 adds the sound effects
   haptics: false, // stays off until M22 adds haptics
   showHints: true,
+  showPuzzleIntro: true,
   highlightLastMove: true,
   defaultDifficulty: DEFAULT_DIFFICULTY,
   defaultColor: 'w',
@@ -54,6 +56,7 @@ export const useSettingsStore = create<SettingsState>()(
         sound: s.sound,
         haptics: s.haptics,
         showHints: s.showHints,
+        showPuzzleIntro: s.showPuzzleIntro,
         highlightLastMove: s.highlightLastMove,
         defaultDifficulty: s.defaultDifficulty,
         defaultColor: s.defaultColor,
@@ -66,6 +69,7 @@ export const useSettingsStore = create<SettingsState>()(
           sound: typeof p.sound === 'boolean' ? p.sound : current.sound,
           haptics: typeof p.haptics === 'boolean' ? p.haptics : current.haptics,
           showHints: typeof p.showHints === 'boolean' ? p.showHints : current.showHints,
+          showPuzzleIntro: typeof p.showPuzzleIntro === 'boolean' ? p.showPuzzleIntro : current.showPuzzleIntro,
           highlightLastMove:
             typeof p.highlightLastMove === 'boolean' ? p.highlightLastMove : current.highlightLastMove,
           defaultDifficulty: isOneOf(p.defaultDifficulty, ['easy', 'medium', 'hard'])
