@@ -49,7 +49,7 @@ export default function App() {
             </Routes>
           </Suspense>
         </AppShell>
-        <Toaster position="top-center" />
+        <Toaster position="bottom-center" />
       </TooltipProvider>
     </BrowserRouter>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { ArrowLeft, ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Pause, Play, RefreshCw, Play as PlayIcon } from 'lucide-react'
-import type { Square } from 'chess.js'
+import type { PieceSymbol, Square } from 'chess.js'
 import { useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 import { Chessboard, type BoardArrow } from '@/components/chess/chessboard'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { engine } from '@/engine/engine-service'
 import { cn } from '@/lib/utils'
 import { AnalysisCancelled, analyzeRecord, positionsFor, type Evaluation } from '@/logic/analyze-game'
+import { pieceSnapshotsFromMoves } from '@/logic/board-pieces'
 import type { GameRecord } from '@/logic/game-record'
 import { OPPONENTS } from '@/logic/opponents'
 import { criticalMoments, plyLabel } from '@/logic/review'
@@ -50,6 +51,15 @@ export default function Review() {
   }, [gameId])
 
   const positions = useMemo(() => (record ? positionsFor(record.startFen, record.moves) : []), [record])
+  const pieceSnapshots = useMemo(() => {
+    if (!record) return []
+    const convertedMoves = record.moves.map((m) => ({
+      from: m.uci.slice(0, 2) as Square,
+      to: m.uci.slice(2, 4) as Square,
+      promotion: m.uci[4] ? (m.uci[4] as PieceSymbol) : undefined,
+    }))
+    return pieceSnapshotsFromMoves(record.startFen, convertedMoves)
+  }, [record])
   const total = record?.moves.length ?? 0
   const orientation: 'w' | 'b' = bottomSide ?? record?.playerColor ?? 'w'
 
@@ -206,6 +216,7 @@ export default function Review() {
 
       <Chessboard
         fen={positions[index]}
+        pieces={pieceSnapshots[index]}
         readOnly
         orientation={orientation}
         highlights={last ? lastMoveHighlights(lastFrom, lastTo) : undefined}

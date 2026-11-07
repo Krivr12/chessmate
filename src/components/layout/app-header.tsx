@@ -19,7 +19,7 @@ export function AppHeader({ title, canResign, onNewGame, onResign }: AppHeaderPr
   return (
     <header className="flex items-center justify-between gap-2">
       <Button asChild variant="ghost" size="icon">
-        <Link to="/" aria-label="Back to home">
+        <Link to="/home" aria-label="Back to home">
           <ArrowLeft strokeWidth={1.8} aria-hidden="true" />
         </Link>
       </Button>

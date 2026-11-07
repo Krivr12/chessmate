@@ -188,10 +188,10 @@
   --piece-opponent-detail: #ffffff;
 
   /* Win chance card: light brown panel, dark brown progress */
-  --win-card-bg: #f5e6d3;
-  --win-card-fg: #5a3c2a;
-  --win-card-track: #e8d4c0;
-  --win-card-fill: #8b5a3c;
+  --win-card-bg: #8b5a3c;
+  --win-card-fg: #ffffff;
+  --win-card-track: #c4915e;
+  --win-card-fill: #f5e6d3;
 
   --shadow-card: 0 4px 16px rgba(32, 43, 54, 0.06);
   --shadow-popover: 0 16px 48px rgba(32, 43, 54, 0.18);

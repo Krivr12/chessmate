@@ -69,6 +69,21 @@ export function piecesFromMoves(
   return pieces
 }
 
+/** Get all piece snapshots by replaying moves. Returns array of piece states for each position in the move list. */
+export function pieceSnapshotsFromMoves(
+  startFen: string,
+  moves: { from: Square; to: Square; promotion?: PieceSymbol }[],
+): PieceState[][] {
+  const game = new Chess(startFen)
+  let pieces = initialPieces(startFen)
+  const snapshots = [pieces.map((p) => ({ ...p }))]
+  for (const m of moves) {
+    pieces = applyMove(pieces, game.move(m))
+    snapshots.push(pieces.map((p) => ({ ...p })))
+  }
+  return snapshots
+}
+
 export const PIECE_NAMES: Record<PieceSymbol, string> = {
   p: 'pawn',
   n: 'knight',

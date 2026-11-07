@@ -193,7 +193,7 @@ export default function Game() {
             onHome={() => {
               // Closing the result screen ends the battle's theme lock (D2).
               useThemeLock.getState().unlock()
-              navigate('/')
+              navigate('/home')
             }}
             onReview={() => {
               useThemeLock.getState().unlock()

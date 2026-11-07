@@ -1,7 +1,6 @@
-import { useState, type ReactNode } from 'react'
-import { ArrowLeft, ChartNoAxesColumnIncreasing, Copy, Crown, Lightbulb, Mail } from 'lucide-react'
+import { useState, useRef, type ReactNode } from 'react'
+import { ArrowLeft, ChartNoAxesColumnIncreasing, Copy, Crown, Lightbulb, Mail, Check } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import { toast } from 'sonner'
 import { LinkedinIcon } from '@/components/layout/linkedin-icon'
 import { Button } from '@/components/ui/button'
 import { CREDITS } from '@/config/credits'
@@ -95,16 +94,6 @@ const TROUBLESHOOTING: { title: string; steps: string[] }[] = [
   },
 ]
 
-const diagnosticsText = (info: { engine: string; storage: string }) =>
-  [
-    'ChessMate diagnostics',
-    `App version: ${__APP_VERSION__}`,
-    `Browser: ${navigator.userAgent}`,
-    `Online: ${navigator.onLine ? 'yes' : 'no'}`,
-    `Engine: ${info.engine}`,
-    `Storage: ${info.storage}`,
-  ].join('\n')
-
 /** A titled block on the Help page. */
 function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -115,36 +104,97 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-export default function Help() {
-  const navigate = useNavigate()
-  const engineStatus = useGameStore((st) => st.engineStatus)
-  const [copying, setCopying] = useState(false)
+/** Button with swapped content on copy - shows centered success message */
+function CopyButton({
+  text,
+  children,
+  successMessage,
+  variant = 'outline',
+  disabled = false,
+  className,
+}: {
+  text: string | (() => Promise<string>)
+  children: ReactNode
+  successMessage: string
+  variant?: 'outline' | 'default'
+  disabled?: boolean
+  className?: string
+}) {
+  const [copied, setCopied] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
 
-  const copyText = async (text: string) => {
-    await navigator.clipboard.writeText(text)
-    toast.success('Copied')
-  }
-
-  const copyDiagnostics = async () => {
-    setCopying(true)
+  const handleCopy = async () => {
+    setIsLoading(true)
     try {
-      const est = await estimateStorage()
-      await copyText(
-        diagnosticsText({
-          engine: engineStatus,
-          storage: est ? `${est.usageMB} MB used of ${est.quotaMB} MB` : 'not available',
-        }),
-      )
-    } catch {
-      toast.error('Could not copy. Your browser may block clipboard access.')
+      const textToCopy = typeof text === 'function' ? await text() : text
+      await navigator.clipboard.writeText(textToCopy)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
     } finally {
-      setCopying(false)
+      setIsLoading(false)
     }
   }
 
-  const copyEmail = () => {
-    // The mail link still opens the mail app. Copying gives a backup if no mail app is set up.
-    copyText(SUPPORT_EMAIL).catch(() => toast.error('Could not copy the email address'))
+  // Capture dimensions on first render of original content
+  const handleRef = (el: HTMLButtonElement | null) => {
+    buttonRef.current = el
+    if (el && !dimensions) {
+      const rect = el.getBoundingClientRect()
+      setDimensions({ width: rect.width, height: rect.height })
+    }
+  }
+
+  const variantClasses =
+    variant === 'outline'
+      ? 'border-2 border-primary bg-transparent text-primary hover:bg-primary/10 hover:text-primary'
+      : 'bg-primary text-primary-foreground hover:bg-primary/90'
+
+  const fixedStyles = dimensions ? { minWidth: `${dimensions.width}px`, minHeight: `${dimensions.height}px` } : {}
+
+  return (
+    <Button
+      ref={handleRef}
+      variant={variant}
+      size="lg"
+      className={`h-auto w-full justify-center gap-3 py-3 transition-all ${variantClasses} ${className || ''}`}
+      onClick={handleCopy}
+      disabled={disabled || isLoading}
+      style={fixedStyles}
+    >
+      {copied ? (
+        <div className="flex items-center justify-center gap-2">
+          <Check className="size-5" strokeWidth={2.5} aria-hidden="true" />
+          <span className="text-sm font-semibold">{successMessage}</span>
+        </div>
+      ) : (
+        children
+      )}
+    </Button>
+  )
+}
+
+export default function Help() {
+  const navigate = useNavigate()
+  const engineStatus = useGameStore((st) => st.engineStatus)
+
+  const getDiagnosticsText = async () => {
+    try {
+      const est = await estimateStorage()
+      return [
+        'ChessMate diagnostics',
+        `App version: ${__APP_VERSION__}`,
+        `Browser: ${navigator.userAgent}`,
+        `Online: ${navigator.onLine ? 'yes' : 'no'}`,
+        `Engine: ${engineStatus}`,
+        `Storage: ${est ? `${est.usageMB} MB used of ${est.quotaMB} MB` : 'not available'}`,
+      ].join('\n')
+    } catch {
+      return 'ChessMate diagnostics\n(Could not load storage info)'
+    }
   }
 
   return (
@@ -232,29 +282,17 @@ export default function Help() {
           engine status, and storage use. They include no personal data.
         </p>
         <div className="flex flex-col gap-3">
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-auto w-full justify-start gap-3 border-2 border-primary bg-transparent py-3 text-primary hover:bg-primary/10 hover:text-primary"
-            onClick={() => void copyDiagnostics()}
-            disabled={copying}
-          >
+          <CopyButton text={getDiagnosticsText} variant="outline" successMessage="Copied Diagnostics!">
             <Copy className="size-5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
             <span className="text-sm font-semibold">Copy diagnostics</span>
-          </Button>
-          <Button
-            asChild
-            size="lg"
-            className="h-auto w-full min-w-0 justify-start gap-3 bg-primary py-3 text-primary-foreground hover:bg-primary/90"
-          >
-            <a href={`mailto:${SUPPORT_EMAIL}`} onClick={copyEmail} className="min-w-0">
-              <Mail className="size-5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
-              <span className="flex min-w-0 flex-1 flex-col items-start text-left">
-                <span className="text-xs font-medium opacity-90">Email</span>
-                <span className="block w-full truncate text-sm font-semibold">{SUPPORT_EMAIL}</span>
-              </span>
-            </a>
-          </Button>
+          </CopyButton>
+          <CopyButton text={SUPPORT_EMAIL} variant="default" successMessage="Copied Email!">
+            <Mail className="size-5 shrink-0" strokeWidth={1.8} aria-hidden="true" />
+            <span className="flex min-w-0 flex-1 flex-col items-start text-left">
+              <span className="text-xs font-medium opacity-90">Email</span>
+              <span className="block w-full truncate text-sm font-semibold">{SUPPORT_EMAIL}</span>
+            </span>
+          </CopyButton>
           <Button
             asChild
             size="lg"

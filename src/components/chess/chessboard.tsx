@@ -273,6 +273,8 @@ export function BoardSurface({
 export type ChessboardProps = {
   /** Show this position instead of the live game. Board becomes read-only. */
   fen?: string
+  /** Optional piece state to use instead of generating from FEN. Preserves piece identities during replay. */
+  pieces?: PieceState[]
   /** Disable moves. The live position still shows when no `fen` is given. */
   readOnly?: boolean
   /** Side at the bottom of the board. Defaults to the player's color. */
@@ -284,10 +286,10 @@ export type ChessboardProps = {
 }
 
 /** A static view: no selection, no overlays, no promotion, and no clicks. */
-function readOnlyView(live: BoardView, fen?: string): BoardView {
+function readOnlyView(live: BoardView, fen?: string, pieces?: PieceState[]): BoardView {
   return {
     ...live,
-    pieces: fen ? initialPieces(fen) : live.pieces,
+    pieces: pieces ?? (fen ? initialPieces(fen) : live.pieces),
     selected: null,
     legalTargets: [],
     lastMove: null,
@@ -301,7 +303,7 @@ function readOnlyView(live: BoardView, fen?: string): BoardView {
 }
 
 /** The live game board: reads the game store and passes the view to `BoardSurface`. */
-export function Chessboard({ fen, readOnly = false, orientation, highlights, arrows = [] }: ChessboardProps = {}) {
+export function Chessboard({ fen, pieces, readOnly = false, orientation, highlights, arrows = [] }: ChessboardProps = {}) {
   const live = useGameStore(
     useShallow((st): BoardView => ({
       pieces: st.pieces,
@@ -321,7 +323,7 @@ export function Chessboard({ fen, readOnly = false, orientation, highlights, arr
   const playerColor = useGameStore((st) => st.playerColor)
   const highlightLast = useSettingsStore((st) => st.highlightLastMove)
   const isReadOnly = readOnly || fen !== undefined
-  const view = isReadOnly ? readOnlyView(live, fen) : live
+  const view = isReadOnly ? readOnlyView(live, fen, pieces) : live
   const flipped = (orientation ?? playerColor) === 'b'
   return (
     <BoardSurface

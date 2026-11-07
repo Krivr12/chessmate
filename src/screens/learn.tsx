@@ -35,14 +35,20 @@ function LessonCard({
       <span
         className={cn(
           'flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
-          state === 'done' ? 'bg-win-card-fill text-win-card' : 'bg-surface-3 text-text-primary',
+          state === 'done'
+            ? 'bg-primary ring-2 ring-primary/20'
+            : 'bg-surface-3 text-text-primary',
         )}
         aria-hidden="true"
       >
-        {state === 'done' ? <CircleCheck className="size-5" strokeWidth={2} /> : order}
+        {state === 'done' ? (
+          <CircleCheck className="size-5 text-primary-foreground dark:text-app-bg" strokeWidth={2.5} />
+        ) : (
+          order
+        )}
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-sm font-semibold text-text-primary">{title}</span>
+        <span className={cn('truncate text-sm font-semibold', state === 'done' ? 'text-primary' : 'text-text-primary')}>{title}</span>
         <span className="flex items-center gap-1 text-xs text-text-secondary">
           {state === 'locked' && <Lock className="size-3.5" strokeWidth={2} aria-hidden="true" />}
           {state === 'in-progress' ? `${STATE_TEXT[state]} (step ${stepsDone + 1} of ${total})` : STATE_TEXT[state]}
@@ -61,7 +67,7 @@ function LessonCard({
     )
   }
   return (
-    <Link to={to} className={className}>
+    <Link to={to} className={cn(className, state === 'done' && 'border-primary/30')}>
       {body}
     </Link>
   )

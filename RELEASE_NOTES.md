@@ -2,6 +2,17 @@
 
 ## What's New
 
+### Bug Fixes & Polish (Post-Launch)
+- **Navigation:** Fixed home button and back button redirects in game screens (now navigate to `/home` instead of landing page)
+- **Game Replay:** Fixed piece movement glitch during replay by maintaining piece identity across move sequences
+- **Completed Lessons:** Enhanced visual distinctiveness with primary color badges and centered text
+- **Toast Notifications:** Repositioned from top to bottom of screen for better visibility in mobile PWA context
+- **Copy Feedback:** Refactored copy mechanism to use inline state-based feedback instead of global toasts
+  - Copy buttons now swap their entire content to a centered success message ("Copied Diagnostics!" or "Copied Email!")
+  - Button dimensions remain fixed during content swap to prevent layout shift
+  - Success message displays for 2 seconds before reverting to original state
+- **Light Mode Colors:** Swapped Win Chance and Hint card background colors for consistent visual hierarchy across dark and light themes
+
 ### Major Features (Phase 2)
 - **Home Dashboard:** Resume active games, quick access to Puzzles, Learn, and recent analysis
 - **Puzzles:** 500+ offline puzzles organized by difficulty and theme, with progress tracking
@@ -54,6 +65,7 @@ None. This is the second full version of the app.
 - Puzzle hints are two-step (piece, then destination) to maintain simplicity
 - Learn lessons are shipped with the app; new lessons require an update
 - Sound and haptics are toggles but not implemented in this phase
+- Diagnostics copy may fail silently in browsers that block clipboard access (a fallback error message is logged to console)
 
 ## Browser Support
 - Chrome/Edge 90+
@@ -116,7 +128,7 @@ Report bugs or suggestions via the Help & Support screen (Settings > Help and su
 
 ---
 
-**Release Date:** October 2026  
-**App Version:** 2.0  
+**Release Date:** October 2026 (Latest: November 2026)  
+**App Version:** 2.0.1  
 **Engine:** Stockfish 19 (lite, single-threaded WASM)  
 **Puzzle Count:** 500+ (categorized by difficulty and theme)
