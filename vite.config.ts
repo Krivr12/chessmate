@@ -40,8 +40,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Precache everything, including the Stockfish worker and its WASM.
-        globPatterns: ["**/*.{js,css,html,svg,png,woff2,wasm}"],
+        // Precache everything, including the Stockfish worker, WASM, and license files.
+        globPatterns: ["**/*.{js,css,html,svg,png,woff2,wasm,txt}"],
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
         navigateFallback: "/index.html",
         cleanupOutdatedCaches: true,

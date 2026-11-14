@@ -5,9 +5,14 @@ export const CREDITS: Credit[] = [
   {
     name: 'Stockfish 19',
     license: 'GPL-3.0',
-    note: 'Chess engine (public/engine). The license text is in COPYING-stockfish.txt. Source is available from stockfishchess.org.',
+    note: 'Chess engine running in your browser (public/engine). Free software with source available from stockfishchess.org.',
   },
   { name: 'chess.js', license: 'BSD-2-Clause', note: 'Move rules and game state.' },
+  {
+    name: 'Lichess Puzzle Database',
+    license: 'CC0 (Public Domain)',
+    note: '1,800+ chess puzzles from database.lichess.org.',
+  },
   { name: 'React and React DOM', license: 'MIT' },
   { name: 'React Router', license: 'MIT' },
   { name: 'Zustand', license: 'MIT', note: 'State management.' },

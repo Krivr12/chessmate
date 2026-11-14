@@ -6,6 +6,21 @@ A local, offline-first chess app with cute animal opponents (frog in dark mode, 
 
 **Status:** Ready for testing and deployment.
 
+## Credits and Licenses
+
+ChessMate is built on free and open-source software:
+
+- **Stockfish chess engine** (GPL-3.0): The powerful, free chess engine that powers the opponent AI. All computation runs locally in your browser. [Learn more](https://github.com/official-stockfish/Stockfish)
+- **Lichess puzzle database** (CC0): Over 1,800 curated chess puzzles for learning and practice. [Explore the database](https://database.lichess.org/)
+- **chess.js** (BSD-2-Clause): Core move validation and game rules engine. [Repository](https://github.com/jhlywa/chess.js)
+- **React, TypeScript, Tailwind CSS, and many others**: See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the complete list and licenses.
+
+**App license:** GPL-3.0 — The full source code is available under the GNU General Public License v3. See [LICENSE](LICENSE) for details.
+
+**Copyright:** © 2026 Christopher Evangelista. Chess pieces and artwork generated with ChatGPT.
+
+For full credits, open the in-app Credits screen or visit [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 > **Design source:** `docs/chessmate-ui-design-spec.md` (colors, typography, spacing, component specs, icons)
 >
 > **Phase 2 spec:** `phase-2.md` (architecture, milestones, decisions, risks)
